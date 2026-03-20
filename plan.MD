@@ -1,7 +1,7 @@
 # 개인 홈페이지 계획서
 
-> **버전:** v1.1 (기술 스택 확정)  
-> **작성일:** 2026-03-20  
+> **버전:** v1.2 (배포 방식 확정)
+> **작성일:** 2026-03-20
 > **상태:** 기술 스택 확정 / 구현 준비 중
 
 ---
@@ -13,7 +13,7 @@
 | 프로젝트명 | 개인 포트폴리오 홈페이지 |
 | 목적 | 자기소개 및 개발 역량 전시, 이후 단계별 기능 확장 기반 마련 |
 | 대상 사용자 | 채용 담당자, 동료 개발자, 지인 |
-| 배포 방식 | 프론트: Vercel / 백엔드: Railway 또는 Render (미정) |
+| 배포 방식 | 프론트: GitHub Pages / 백엔드: Railway 또는 Render (미정) |
 | 기술 스택 | 프론트: React / 백엔드: Node.js + Express / DB: MySQL |
 
 ---
@@ -101,7 +101,7 @@
 | 프론트엔드 | React | Vite로 프로젝트 생성 예정 |
 | 백엔드 | Node.js + Express | REST API 서버 |
 | 데이터베이스 | MySQL | 2단계 게시판부터 사용 |
-| 프론트 배포 | Vercel | GitHub 연동 자동 배포 |
+| 프론트 배포 | GitHub Pages | GitHub 레포 연동 정적 배포 |
 | 백엔드 배포 | Railway 또는 Render | 무료 플랜으로 시작 |
 | 버전 관리 | Git + GitHub | 필수 (커밋 로그가 평가 기준) |
 
@@ -111,7 +111,7 @@
 [사용자 브라우저]
        │
        ▼
-[React 앱 - Vercel]
+[React 앱 - GitHub Pages]
        │  REST API 호출
        ▼
 [Express 서버 - Railway/Render]
@@ -132,7 +132,7 @@
 | Sprint 0 | 계획서 작성 + GitHub 레포 생성 + Vite React 프로젝트 세팅 | 즉시 |
 | Sprint 1 | 컴포넌트 구조 설계 + 각 섹션 UI 구현 | 미정 |
 | Sprint 2 | 반응형 처리 + 콘텐츠 채우기 | 미정 |
-| Sprint 3 | Vercel 배포 완료 + Twin Commit | 미정 |
+| Sprint 3 | GitHub Pages 배포 완료 + Twin Commit | 미정 |
 
 ---
 
@@ -158,6 +158,7 @@ feat: 1단계 기본 홈페이지 구현 및 배포
 - [ ] 디자인 컬러/폰트 확정
 - [ ] GitHub 레포지토리 생성
 - [ ] Vite React 프로젝트 초기 세팅
+- [x] 프론트 배포 플랫폼 확정 (GitHub Pages)
 - [ ] 백엔드 배포 플랫폼 확정 (Railway vs Render)
 - [ ] 실제 자기소개 내용 작성
 - [ ] 프로젝트 목록 정리
