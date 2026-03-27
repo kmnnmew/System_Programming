@@ -168,16 +168,18 @@ function formatShortDate(str) {
 
 const EMPTY_FORM       = { title:'', category:'자유',  type:'text', imageData:'', videoUrl:'', content:'' }
 const EMPTY_STUDY_FORM = { title:'', category:'React', type:'text', imageData:'', videoUrl:'', tags:'', content:'' }
+const DUMMY_VOTES_KEY  = 'v3_dummy_votes' // { postId: { likes, dislikes } }
 
 // ── 컴포넌트 ──────────────────────────────────────────────────────
 export default function AppV3() {
   // ── 공통
-  const [boardMode,    setBoardMode]   = useState('community') // 'community' | 'study'
+  const [boardMode,    setBoardMode]   = useState('community')
   const [showWrite,    setShowWrite]   = useState(false)
   const [imgPreview,   setImgPreview]  = useState('')
   const [formErr,      setFormErr]     = useState('')
   const [submitting,   setSubmitting]  = useState(false)
-  const fileRef = useRef(null)
+  const fileRef  = useRef(null)
+  const fileRef2 = useRef(null)
 
   // ── 게시판 (community)
   const [dbPosts,      setDbPosts]     = useState([])
@@ -188,22 +190,33 @@ export default function AppV3() {
   const [votes, setVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}') } catch { return {} }
   })
+  // 더미 포스트 추천/비추천 수 (localStorage 저장)
+  const [dummyCounts, setDummyCounts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(DUMMY_VOTES_KEY) || '{}') } catch { return {} }
+  })
+
+  // ── 댓글
+  const [comments,        setComments]        = useState([])
+  const [commentText,     setCommentText]     = useState('')
+  const [commentsLoading, setCommentsLoading] = useState(false)
+  const [commentCounts,   setCommentCounts]   = useState({}) // { postId: count }
 
   // ── Study Board
-  const [studyDbPosts,    setStudyDbPosts]    = useState([])
-  const [studyLoading,    setStudyLoading]    = useState(true)
-  const [studyCat,        setStudyCat]        = useState("전체")
-  const [studySelected,   setStudySelected]   = useState(null)
-  const [studyForm,       setStudyForm]       = useState(EMPTY_STUDY_FORM)
-  const fileRef2 = useRef(null)
+  const [studyDbPosts,  setStudyDbPosts]  = useState([])
+  const [studyLoading,  setStudyLoading]  = useState(true)
+  const [studyCat,      setStudyCat]      = useState("전체")
+  const [studySelected, setStudySelected] = useState(null)
+  const [studyForm,     setStudyForm]     = useState(EMPTY_STUDY_FORM)
 
   // ── 전체 게시글: DB + 더미 ───────────────────────────────────────
-  const allPosts = [...dbPosts, ...DUMMY_POSTS]
-  const filtered = activeCat === "전체"
-    ? allPosts
-    : allPosts.filter(p => p.category === activeCat)
-
-  // ── 최신순 번호 매기기 ───────────────────────────────────────────
+  // 더미 포스트에 최신 추천/비추천 수 반영
+  const mergedDummy = DUMMY_POSTS.map(p => ({
+    ...p,
+    likes:    dummyCounts[p.id]?.likes    ?? p.likes,
+    dislikes: dummyCounts[p.id]?.dislikes ?? p.dislikes,
+  }))
+  const allPosts = [...dbPosts, ...mergedDummy]
+  const filtered = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
 
   // ── Supabase 로드 (게시판) ────────────────────────────────────────
@@ -234,7 +247,7 @@ export default function AppV3() {
     })()
   }, [])
 
-  // ── 게시글 열기 (조회수 증가) ────────────────────────────────────
+  // ── 게시글 열기 (조회수 증가 + 댓글 로드) ─────────────────────
   async function handleOpen(post) {
     const fresh = { ...post }
     if (!String(post.id).startsWith('dummy')) {
@@ -244,33 +257,79 @@ export default function AppV3() {
       setDbPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: newViews } : p))
     }
     setSelectedPost(fresh)
+    setComments([])
+    setCommentText('')
+    if (!String(post.id).startsWith('dummy')) {
+      setCommentsLoading(true)
+      const { data } = await supabase.from('comments').select('*').eq('post_id', post.id).order('created_at', { ascending: true })
+      setComments(data || [])
+      setCommentsLoading(false)
+    }
   }
 
   // ── 추천 / 비추천 ────────────────────────────────────────────────
   async function handleVote(postId, type) {
-    if (String(postId).startsWith('dummy')) return
+    const isDummy = String(postId).startsWith('dummy')
     const current = votes[postId]
     if (current === type) return // 이미 같은 투표
-
-    const target = dbPosts.find(p => p.id === postId)
-    if (!target) return
-
-    const upd = {}
-    if (type === 'like') {
-      upd.likes = (target.likes || 0) + 1
-      if (current === 'dislike') upd.dislikes = Math.max(0, (target.dislikes || 0) - 1)
-    } else {
-      upd.dislikes = (target.dislikes || 0) + 1
-      if (current === 'like') upd.likes = Math.max(0, (target.likes || 0) - 1)
-    }
-
-    await supabase.from('board_posts').update(upd).eq('id', postId)
 
     const newVotes = { ...votes, [postId]: type }
     setVotes(newVotes)
     localStorage.setItem(VOTES_KEY, JSON.stringify(newVotes))
-    setDbPosts(prev => prev.map(p => p.id === postId ? { ...p, ...upd } : p))
-    setSelectedPost(prev => prev?.id === postId ? { ...prev, ...upd } : prev)
+
+    if (isDummy) {
+      const base = DUMMY_POSTS.find(p => p.id === postId)
+      const prev = dummyCounts[postId] || { likes: base.likes, dislikes: base.dislikes }
+      const upd = { ...prev }
+      if (type === 'like') {
+        upd.likes = upd.likes + 1
+        if (current === 'dislike') upd.dislikes = Math.max(0, upd.dislikes - 1)
+      } else {
+        upd.dislikes = upd.dislikes + 1
+        if (current === 'like') upd.likes = Math.max(0, upd.likes - 1)
+      }
+      const newDummy = { ...dummyCounts, [postId]: upd }
+      setDummyCounts(newDummy)
+      localStorage.setItem(DUMMY_VOTES_KEY, JSON.stringify(newDummy))
+      setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
+    } else {
+      const target = dbPosts.find(p => p.id === postId)
+      if (!target) return
+      const upd = {}
+      if (type === 'like') {
+        upd.likes = (target.likes || 0) + 1
+        if (current === 'dislike') upd.dislikes = Math.max(0, (target.dislikes || 0) - 1)
+      } else {
+        upd.dislikes = (target.dislikes || 0) + 1
+        if (current === 'like') upd.likes = Math.max(0, (target.likes || 0) - 1)
+      }
+      await supabase.from('board_posts').update(upd).eq('id', postId)
+      setDbPosts(prev => prev.map(p => p.id === postId ? { ...p, ...upd } : p))
+      setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
+    }
+  }
+
+  // ── 댓글 ─────────────────────────────────────────────────────────
+  async function handleAddComment() {
+    if (!commentText.trim() || !selectedPost || String(selectedPost.id).startsWith('dummy')) return
+    const { data, error } = await supabase.from('comments').insert([{
+      post_id: selectedPost.id,
+      content: commentText.trim(),
+      date:    formatDate(),
+    }]).select().single()
+    if (error) { alert('댓글 저장 실패: ' + error.message); return }
+    setComments(prev => [...prev, data])
+    setCommentText('')
+    setCommentCounts(prev => ({ ...prev, [selectedPost.id]: (prev[selectedPost.id] || 0) + 1 }))
+  }
+  async function handleDeleteComment(commentId) {
+    if (!confirm('댓글을 삭제할까요?')) return
+    const { error } = await supabase.from('comments').delete().eq('id', commentId)
+    if (error) { alert('삭제 실패: ' + error.message); return }
+    setComments(prev => prev.filter(c => c.id !== commentId))
+    if (selectedPost) {
+      setCommentCounts(prev => ({ ...prev, [selectedPost.id]: Math.max(0, (prev[selectedPost.id] || 0) - 1) }))
+    }
   }
 
   // ── 글 쓰기 ──────────────────────────────────────────────────────
@@ -547,9 +606,6 @@ export default function AppV3() {
 
         {/* ── 커뮤니티 게시판 ──────────────────────────────────────── */}
         {boardMode === 'community' && (() => {
-          const allPosts = [...dbPosts, ...DUMMY_POSTS]
-          const filtered = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
-          const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
           return (
             <>
               <p className="board-subtitle">자유롭게 글을 작성하고 소통하는 공간입니다.</p>
@@ -706,27 +762,61 @@ export default function AppV3() {
             </div>
 
             {/* 추천 / 비추천 */}
-            {!String(selectedPost.id).startsWith('dummy') ? (
-              <div className="post-vote-area">
-                <button
-                  className={`vote-btn vote-like${votes[selectedPost.id] === 'like' ? ' voted' : ''}`}
-                  onClick={() => handleVote(selectedPost.id, 'like')}
-                >
-                  👍 추천 <span className="vote-count">{selectedPost.likes || 0}</span>
-                </button>
-                <button
-                  className={`vote-btn vote-dislike${votes[selectedPost.id] === 'dislike' ? ' voted' : ''}`}
-                  onClick={() => handleVote(selectedPost.id, 'dislike')}
-                >
-                  👎 비추천 <span className="vote-count">{selectedPost.dislikes || 0}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="post-vote-area">
-                <div className="vote-btn vote-like">👍 추천 <span className="vote-count">{selectedPost.likes || 0}</span></div>
-                <div className="vote-btn vote-dislike">👎 비추천 <span className="vote-count">{selectedPost.dislikes || 0}</span></div>
-              </div>
-            )}
+            <div className="post-vote-area">
+              <button
+                className={`vote-btn vote-like${votes[selectedPost.id] === 'like' ? ' voted' : ''}`}
+                onClick={() => handleVote(selectedPost.id, 'like')}
+              >
+                👍 추천 <span className="vote-count">{selectedPost.likes || 0}</span>
+              </button>
+              <button
+                className={`vote-btn vote-dislike${votes[selectedPost.id] === 'dislike' ? ' voted' : ''}`}
+                onClick={() => handleVote(selectedPost.id, 'dislike')}
+              >
+                👎 비추천 <span className="vote-count">{selectedPost.dislikes || 0}</span>
+              </button>
+            </div>
+
+            {/* 댓글 */}
+            <div className="post-comments">
+              <h4 className="comments-title">
+                💬 댓글{comments.length > 0 ? ` (${comments.length})` : ''}
+              </h4>
+              {String(selectedPost.id).startsWith('dummy') ? (
+                <p className="comments-notice">샘플 게시글에는 댓글을 작성할 수 없습니다.</p>
+              ) : (
+                <>
+                  {commentsLoading ? (
+                    <p className="comments-loading">댓글 불러오는 중...</p>
+                  ) : comments.length === 0 ? (
+                    <p className="comments-empty">첫 댓글을 남겨보세요!</p>
+                  ) : (
+                    <div className="comments-list">
+                      {comments.map(c => (
+                        <div key={c.id} className="comment-item">
+                          <div className="comment-content">{c.content}</div>
+                          <div className="comment-footer">
+                            <span className="comment-date">{c.date}</span>
+                            <button className="comment-del-btn" onClick={() => handleDeleteComment(c.id)}>삭제</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="comment-input-row">
+                    <textarea
+                      className="comment-textarea"
+                      placeholder="댓글을 입력하세요..."
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
+                      rows={2}
+                    />
+                    <button className="comment-submit-btn" onClick={handleAddComment}>등록</button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
