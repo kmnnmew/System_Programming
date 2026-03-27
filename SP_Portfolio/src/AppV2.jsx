@@ -315,6 +315,7 @@ export default function AppV2() {
           <a href="#awards">Awards</a>
           <a href="#board">Board</a>
           <a href="#contact">Contact</a>
+          <a href="#v3" className="nav-ver-switch">v3 →</a>
           <a href="#" onClick={e => { e.preventDefault(); window.location.hash = '' }} className="nav-ver-switch">← v1</a>
         </div>
       </nav>

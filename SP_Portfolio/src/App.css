@@ -71,6 +71,16 @@ a { color: inherit; text-decoration: none; }
   border-color: var(--accent) !important;
   color: var(--accent) !important;
 }
+.nav-v3-btn {
+  color: #3fb950 !important;
+  background: rgba(63, 185, 80, 0.1) !important;
+  border-color: rgba(63, 185, 80, 0.3) !important;
+}
+.nav-v3-btn:hover {
+  background: rgba(63, 185, 80, 0.2) !important;
+  border-color: #3fb950 !important;
+  color: #3fb950 !important;
+}
 
 /* Hero */
 .hero {
