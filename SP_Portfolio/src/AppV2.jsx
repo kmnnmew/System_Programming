@@ -304,7 +304,10 @@ export default function AppV2() {
 
       {/* Nav */}
       <nav className="nav">
-        <span className="nav-name">심하윤</span>
+        <div className="nav-left">
+          <span className="nav-name">심하윤</span>
+          <span className="ver-badge">v2</span>
+        </div>
         <div className="nav-links">
           <a href="#about">About</a>
           <a href="#skills">Skills</a>
@@ -312,7 +315,7 @@ export default function AppV2() {
           <a href="#awards">Awards</a>
           <a href="#board">Board</a>
           <a href="#contact">Contact</a>
-          <a href="#" onClick={e => { e.preventDefault(); window.location.hash = '' }} className="ver-badge">v2</a>
+          <a href="#" onClick={e => { e.preventDefault(); window.location.hash = '' }} className="nav-ver-switch">← v1</a>
         </div>
       </nav>
 

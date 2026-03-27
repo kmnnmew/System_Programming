@@ -89,6 +89,7 @@ export default function App() {
           <a href="#projects">Projects</a>
           <a href="#awards">Awards</a>
           <a href="#contact">Contact</a>
+          <a href="#v2" className="nav-v2-btn">Study Board v2 →</a>
         </div>
       </nav>
 

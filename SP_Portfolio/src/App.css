@@ -55,6 +55,22 @@ a { color: inherit; text-decoration: none; }
   transition: color 0.2s;
 }
 .nav-links a:hover { color: var(--text); }
+.nav-v2-btn {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  background: rgba(68, 147, 248, 0.12);
+  border: 1px solid rgba(68, 147, 248, 0.35);
+  padding: 5px 14px;
+  border-radius: 20px;
+  transition: background 0.2s, border-color 0.2s !important;
+  white-space: nowrap;
+}
+.nav-v2-btn:hover {
+  background: rgba(68, 147, 248, 0.22) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
 
 /* Hero */
 .hero {
