@@ -5,7 +5,7 @@ const portfolio = {
   tagline: "데이터와 기술로 가치를 만드는 웹 개발자",
   intro: "단순히 코드를 짜는 것을 넘어, 적극적인 소통으로 팀의 방향을 맞추고 함께 결과물을 만들어가는 개발자입니다. 공간 정보 데이터까지 다룰 줄 아는 준비된 신입 개발자 심하윤입니다.",
   github: "https://github.com/kmnnmew",
-  email: "your@email.com", // 이메일 넣어주세요
+  email: "shimhayun08@gmail.com", // 이메일 넣어주세요
   about: {
     school: "서울디지텍고등학교 (2027 졸업 예정)",
     strengths: [

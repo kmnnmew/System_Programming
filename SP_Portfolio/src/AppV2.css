@@ -381,6 +381,38 @@ a { color: inherit; text-decoration: none; }
    Board (게시판) 스타일
 ──────────────────────────────────────────── */
 
+/* 보드 헤더 행 (제목 + 글쓰기 버튼) */
+.board-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.write-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+.write-btn:hover {
+  background: var(--accent2);
+  transform: translateY(-1px);
+}
+
+.board-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text2);
+  font-size: 15px;
+}
+
 .board-subtitle {
   font-size: 15px;
   color: var(--text2);
@@ -447,7 +479,35 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   gap: 8px;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 내가 쓴 글 삭제 버튼 */
+.card-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.board-card:hover .card-delete-btn { opacity: 1; }
 .board-thumb--text {
   background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
 }
