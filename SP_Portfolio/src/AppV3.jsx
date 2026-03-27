@@ -69,7 +69,42 @@ const portfolio = {
 
 // ── 게시판 설정 ────────────────────────────────────────────────────
 const BOARD_CATS = ["전체", "자유", "질문", "정보", "이슈", "기타"]
+const STUDY_CATS = ["전체", "React", "JavaScript", "Java", "Python", "DB", "기타"]
 const VOTES_KEY  = 'v3_votes' // { postId: 'like' | 'dislike' }
+
+// ── Study Board 더미 게시글 ────────────────────────────────────────
+const STUDY_DUMMY = [
+  {
+    id: 'sd-1', category: 'React', title: 'React useState & useEffect 완벽 정리',
+    preview: 'React 훅의 핵심인 useState와 useEffect의 동작 원리, 의존성 배열, 클린업 함수까지 실전 예제로 정리했습니다.',
+    date: '2026.03.20', tags: ['React', 'Hooks', 'Frontend'], type: 'text',
+    content: `## useState란?\n\nuseState는 컴포넌트에 상태값을 추가할 수 있는 훅입니다.\n\`\`\`jsx\nconst [count, setCount] = useState(0)\n\`\`\`\n\n## useEffect란?\n\n의존성 배열을 빈 배열로 두면 마운트 시 1회만 실행됩니다.`,
+  },
+  {
+    id: 'sd-2', category: 'Java', title: 'JSP & Servlet 동작 흐름 정리',
+    preview: '클라이언트 요청부터 서버 응답까지의 전체 흐름, doGet/doPost 차이, 세션과 쿠키 처리 방법을 정리했습니다.',
+    date: '2026.03.15', tags: ['Java', 'JSP', 'Servlet'], type: 'text',
+    content: `## JSP/Servlet 요청 처리 흐름\n\n1. 클라이언트 HTTP 요청\n2. Tomcat → Servlet 전달\n3. doGet / doPost 실행\n4. JSP 응답 페이지 생성\n5. 클라이언트에 HTML 반환`,
+  },
+  {
+    id: 'sd-3', category: 'DB', title: 'Oracle JOIN 종류와 실전 쿼리',
+    preview: 'INNER JOIN, LEFT OUTER JOIN, FULL OUTER JOIN의 차이와 실제 프로젝트에서 자주 쓰는 쿼리 패턴을 정리했습니다.',
+    date: '2026.03.10', tags: ['Oracle', 'SQL', 'DB'], type: 'text',
+    content: `## JOIN 종류\n\n### INNER JOIN\n두 테이블 모두에 있는 데이터만 조회\n\`\`\`sql\nSELECT a.name, b.dept FROM employee a INNER JOIN department b ON a.dept_id = b.id\n\`\`\`\n\n### LEFT OUTER JOIN\n왼쪽 테이블 전체 + 오른쪽 일치 데이터`,
+  },
+  {
+    id: 'sd-4', category: 'Python', title: 'Pandas로 공간정보 데이터 분석하기',
+    preview: '데이터안심구역 경진대회에서 활용한 Pandas + GeoPandas 기반 공간 데이터 전처리 및 시각화 과정을 기록했습니다.',
+    date: '2026.02.28', tags: ['Python', 'Pandas', 'GIS'], type: 'text',
+    content: `## 공간정보 데이터 처리 흐름\n\n### 1. 데이터 로드\n\`\`\`python\nimport geopandas as gpd\ngdf = gpd.read_file('seoul.geojson')\n\`\`\`\n\n### 2. 전처리 & 시각화\n\`\`\`python\ngdf.plot(column='area_km2', cmap='Blues', legend=True)\n\`\`\``,
+  },
+  {
+    id: 'sd-5', category: 'JavaScript', title: '비동기 처리: Promise vs async/await',
+    preview: '콜백 지옥부터 async/await까지 자바스크립트 비동기 처리의 진화 과정과 각 패턴의 장단점을 비교했습니다.',
+    date: '2026.02.20', tags: ['JavaScript', '비동기', 'Promise'], type: 'text',
+    content: `## async/await (권장)\n\`\`\`js\nasync function loadData(id) {\n  const user = await fetchUser(id)\n  const posts = await fetchPosts(user.id)\n  return posts\n}\n\`\`\``,
+  },
+]
 
 // ── 더미 게시글 ───────────────────────────────────────────────────
 const DUMMY_POSTS = [
@@ -131,23 +166,36 @@ function formatShortDate(str) {
   return str.slice(5) // "2026.03.27" → "03.27"
 }
 
-const EMPTY_FORM = { title:'', category:'자유', type:'text', imageData:'', videoUrl:'', content:'' }
+const EMPTY_FORM       = { title:'', category:'자유',  type:'text', imageData:'', videoUrl:'', content:'' }
+const EMPTY_STUDY_FORM = { title:'', category:'React', type:'text', imageData:'', videoUrl:'', tags:'', content:'' }
 
 // ── 컴포넌트 ──────────────────────────────────────────────────────
 export default function AppV3() {
-  const [dbPosts,     setDbPosts]     = useState([])
-  const [loading,     setLoading]     = useState(true)
-  const [activeCat,   setActiveCat]   = useState("전체")
-  const [selectedPost,setSelectedPost]= useState(null)
-  const [showWrite,   setShowWrite]   = useState(false)
-  const [form,        setForm]        = useState(EMPTY_FORM)
-  const [imgPreview,  setImgPreview]  = useState('')
-  const [formErr,     setFormErr]     = useState('')
-  const [submitting,  setSubmitting]  = useState(false)
+  // ── 공통
+  const [boardMode,    setBoardMode]   = useState('community') // 'community' | 'study'
+  const [showWrite,    setShowWrite]   = useState(false)
+  const [imgPreview,   setImgPreview]  = useState('')
+  const [formErr,      setFormErr]     = useState('')
+  const [submitting,   setSubmitting]  = useState(false)
+  const fileRef = useRef(null)
+
+  // ── 게시판 (community)
+  const [dbPosts,      setDbPosts]     = useState([])
+  const [loading,      setLoading]     = useState(true)
+  const [activeCat,    setActiveCat]   = useState("전체")
+  const [selectedPost, setSelectedPost]= useState(null)
+  const [form,         setForm]        = useState(EMPTY_FORM)
   const [votes, setVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}') } catch { return {} }
   })
-  const fileRef = useRef(null)
+
+  // ── Study Board
+  const [studyDbPosts,    setStudyDbPosts]    = useState([])
+  const [studyLoading,    setStudyLoading]    = useState(true)
+  const [studyCat,        setStudyCat]        = useState("전체")
+  const [studySelected,   setStudySelected]   = useState(null)
+  const [studyForm,       setStudyForm]       = useState(EMPTY_STUDY_FORM)
+  const fileRef2 = useRef(null)
 
   // ── 전체 게시글: DB + 더미 ───────────────────────────────────────
   const allPosts = [...dbPosts, ...DUMMY_POSTS]
@@ -158,16 +206,31 @@ export default function AppV3() {
   // ── 최신순 번호 매기기 ───────────────────────────────────────────
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
 
-  // ── Supabase 로드 ────────────────────────────────────────────────
+  // ── Supabase 로드 (게시판) ────────────────────────────────────────
   useEffect(() => {
     ;(async () => {
       setLoading(true)
-      const { data } = await supabase
-        .from('board_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const { data } = await supabase.from('board_posts').select('*').order('created_at', { ascending: false })
       if (data) setDbPosts(data)
       setLoading(false)
+    })()
+  }, [])
+
+  // ── Supabase 로드 (Study Board) ───────────────────────────────────
+  useEffect(() => {
+    ;(async () => {
+      setStudyLoading(true)
+      const { data } = await supabase.from('posts').select('*').order('created_at', { ascending: false })
+      if (data) {
+        setStudyDbPosts(data.map(p => ({
+          id: p.id, userCreated: true,
+          category: p.category, title: p.title,
+          preview: p.preview, date: p.date,
+          tags: p.tags || [], type: p.type,
+          imageData: p.image_data, videoUrl: p.video_url, content: p.content,
+        })))
+      }
+      setStudyLoading(false)
     })()
   }, [])
 
@@ -263,7 +326,72 @@ export default function AppV3() {
     if (selectedPost?.id === id) setSelectedPost(null)
   }
 
-  function closeWrite() { setShowWrite(false); setForm(EMPTY_FORM); setImgPreview(''); setFormErr('') }
+  function closeWrite() {
+    setShowWrite(false)
+    setForm(EMPTY_FORM); setStudyForm(EMPTY_STUDY_FORM)
+    setImgPreview(''); setFormErr('')
+    if (fileRef.current)  fileRef.current.value = ''
+    if (fileRef2.current) fileRef2.current.value = ''
+  }
+
+  // ── Study Board 핸들러 ────────────────────────────────────────────
+  function handleStudyForm(field, val) { setStudyForm(prev => ({ ...prev, [field]: val })) }
+  function handleStudyTypeChange(type) {
+    setStudyForm(prev => ({ ...prev, type, imageData: '', videoUrl: '' }))
+    setImgPreview('')
+    if (fileRef2.current) fileRef2.current.value = ''
+  }
+  function handleStudyImgFile(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 3 * 1024 * 1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
+    setFormErr('')
+    const reader = new FileReader()
+    reader.onload = ev => {
+      setImgPreview(ev.target.result)
+      setStudyForm(prev => ({ ...prev, imageData: ev.target.result }))
+    }
+    reader.readAsDataURL(file)
+  }
+  async function handleStudySubmit() {
+    if (!studyForm.title.trim())                                   { setFormErr('제목을 입력해주세요.'); return }
+    if (!studyForm.content.trim())                                 { setFormErr('내용을 입력해주세요.'); return }
+    if (studyForm.type === 'image' && !studyForm.imageData)        { setFormErr('이미지를 업로드해주세요.'); return }
+    if (studyForm.type === 'video' && !studyForm.videoUrl.trim())  { setFormErr('동영상 URL을 입력해주세요.'); return }
+
+    setSubmitting(true)
+    const { data, error } = await supabase.from('posts').insert([{
+      title:      studyForm.title.trim(),
+      content:    studyForm.content.trim(),
+      preview:    studyForm.content.trim().slice(0, 120),
+      category:   studyForm.category,
+      tags:       studyForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      type:       studyForm.type,
+      image_data: studyForm.imageData || null,
+      video_url:  studyForm.videoUrl.trim() || null,
+      date:       formatDate(),
+    }]).select().single()
+    setSubmitting(false)
+
+    if (error) { setFormErr('저장 중 오류: ' + error.message); return }
+    const newPost = {
+      id: data.id, userCreated: true,
+      category: data.category, title: data.title,
+      preview: data.preview, date: data.date,
+      tags: data.tags || [], type: data.type,
+      imageData: data.image_data, videoUrl: data.video_url, content: data.content,
+    }
+    setStudyDbPosts(prev => [newPost, ...prev])
+    closeWrite()
+  }
+  async function handleStudyDelete(id, e) {
+    e.stopPropagation()
+    if (!confirm('게시글을 삭제할까요?')) return
+    const { error } = await supabase.from('posts').delete().eq('id', id)
+    if (error) { alert('삭제 실패: ' + error.message); return }
+    setStudyDbPosts(prev => prev.filter(p => p.id !== id))
+    if (studySelected?.id === id) setStudySelected(null)
+  }
 
   // ── 렌더 ─────────────────────────────────────────────────────────
   return (
@@ -397,70 +525,133 @@ export default function AppV3() {
         </div>
       </section>
 
-      {/* ── 게시판 ─────────────────────────────────────────────────── */}
+      {/* ── Board (게시판 + Study Board 통합) ─────────────────────── */}
       <section id="board" className="section">
+        {/* 헤더 */}
         <div className="board-header-row">
-          <h3 className="section-title" style={{ marginBottom:0, borderBottom:'none' }}>게시판</h3>
+          <h3 className="section-title" style={{ marginBottom:0, borderBottom:'none' }}>Board</h3>
           <button className="write-btn" onClick={() => setShowWrite(true)}>+ 글 쓰기</button>
         </div>
-        <p className="board-subtitle">자유롭게 글을 작성하고 소통하는 공간입니다.</p>
-        <div style={{ borderBottom:'1px solid var(--border)', marginBottom:'32px' }} />
 
-        {/* 카테고리 탭 */}
-        <div className="board-tabs">
-          {BOARD_CATS.map(cat => (
-            <button key={cat}
-              className={`board-tab${activeCat === cat ? ' active' : ''}`}
-              onClick={() => setActiveCat(cat)}
-            >{cat}</button>
-          ))}
+        {/* 모드 전환 탭 */}
+        <div className="board-mode-tabs">
+          <button
+            className={`board-mode-tab${boardMode === 'community' ? ' active' : ''}`}
+            onClick={() => setBoardMode('community')}
+          >💬 게시판</button>
+          <button
+            className={`board-mode-tab${boardMode === 'study' ? ' active' : ''}`}
+            onClick={() => setBoardMode('study')}
+          >📚 Study Board</button>
         </div>
 
-        {/* 게시글 목록 */}
-        <div className="blist">
-          {/* 헤더 */}
-          <div className="blist-header">
-            <span className="blist-col-num">번호</span>
-            <span className="blist-col-cat">분류</span>
-            <span className="blist-col-title">제목</span>
-            <span className="blist-col-stat">👍</span>
-            <span className="blist-col-stat">👁</span>
-            <span className="blist-col-date">날짜</span>
-          </div>
-
-          {loading ? (
-            <div className="blist-empty">불러오는 중...</div>
-          ) : withIndex.length === 0 ? (
-            <div className="blist-empty">아직 게시글이 없습니다. 첫 글을 작성해보세요!</div>
-          ) : (
-            withIndex.map(post => (
-              <div key={post.id} className="blist-row" onClick={() => handleOpen(post)}>
-                <span className="blist-col-num blist-num">{post.num}</span>
-                <span className="blist-col-cat">
-                  <span className="blist-cat-badge">{post.category}</span>
-                </span>
-                <span className="blist-col-title blist-title">
-                  {post.title}
-                  {post.type === 'image' && <span className="blist-media-icon">🖼</span>}
-                  {post.type === 'video' && <span className="blist-media-icon">▶</span>}
-                  {!String(post.id).startsWith('dummy') && (
-                    <button className="blist-del-btn"
-                      onClick={e => handleDelete(post.id, e)}
-                      title="삭제">✕</button>
-                  )}
-                </span>
-                <span className="blist-col-stat blist-likes">
-                  {(post.likes || 0) > 0
-                    ? <span className="blist-likes-hot">{post.likes}</span>
-                    : <span className="blist-likes-zero">{post.likes || 0}</span>
-                  }
-                </span>
-                <span className="blist-col-stat blist-views">{post.views || 0}</span>
-                <span className="blist-col-date blist-date">{formatShortDate(post.date)}</span>
+        {/* ── 커뮤니티 게시판 ──────────────────────────────────────── */}
+        {boardMode === 'community' && (() => {
+          const allPosts = [...dbPosts, ...DUMMY_POSTS]
+          const filtered = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
+          const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
+          return (
+            <>
+              <p className="board-subtitle">자유롭게 글을 작성하고 소통하는 공간입니다.</p>
+              <div className="board-tabs">
+                {BOARD_CATS.map(cat => (
+                  <button key={cat} className={`board-tab${activeCat === cat ? ' active' : ''}`}
+                    onClick={() => setActiveCat(cat)}>{cat}</button>
+                ))}
               </div>
-            ))
-          )}
-        </div>
+              <div className="blist">
+                <div className="blist-header">
+                  <span className="blist-col-num">번호</span>
+                  <span className="blist-col-cat">분류</span>
+                  <span className="blist-col-title">제목</span>
+                  <span className="blist-col-stat">👍</span>
+                  <span className="blist-col-stat">👁</span>
+                  <span className="blist-col-date">날짜</span>
+                </div>
+                {loading ? (
+                  <div className="blist-empty">불러오는 중...</div>
+                ) : withIndex.length === 0 ? (
+                  <div className="blist-empty">아직 게시글이 없습니다. 첫 글을 작성해보세요!</div>
+                ) : withIndex.map(post => (
+                  <div key={post.id} className="blist-row" onClick={() => handleOpen(post)}>
+                    <span className="blist-col-num blist-num">{post.num}</span>
+                    <span className="blist-col-cat"><span className="blist-cat-badge">{post.category}</span></span>
+                    <span className="blist-col-title blist-title">
+                      {post.title}
+                      {post.type === 'image' && <span className="blist-media-icon">🖼</span>}
+                      {post.type === 'video' && <span className="blist-media-icon">▶</span>}
+                      {!String(post.id).startsWith('dummy') && (
+                        <button className="blist-del-btn" onClick={e => handleDelete(post.id, e)} title="삭제">✕</button>
+                      )}
+                    </span>
+                    <span className="blist-col-stat blist-likes">
+                      {(post.likes||0) > 0
+                        ? <span className="blist-likes-hot">{post.likes}</span>
+                        : <span className="blist-likes-zero">{post.likes||0}</span>}
+                    </span>
+                    <span className="blist-col-stat blist-views">{post.views||0}</span>
+                    <span className="blist-col-date blist-date">{formatShortDate(post.date)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )
+        })()}
+
+        {/* ── Study Board ──────────────────────────────────────────── */}
+        {boardMode === 'study' && (() => {
+          const allStudy = [...studyDbPosts, ...STUDY_DUMMY]
+          const filteredStudy = studyCat === "전체" ? allStudy : allStudy.filter(p => p.category === studyCat)
+          return (
+            <>
+              <p className="board-subtitle">공부한 내용을 기록하는 학습 노트입니다.</p>
+              <div className="board-tabs">
+                {STUDY_CATS.map(cat => (
+                  <button key={cat} className={`board-tab${studyCat === cat ? ' active' : ''}`}
+                    onClick={() => setStudyCat(cat)}>{cat}</button>
+                ))}
+              </div>
+              {studyLoading ? (
+                <div className="blist-empty">불러오는 중...</div>
+              ) : filteredStudy.length === 0 ? (
+                <div className="blist-empty">아직 게시글이 없습니다. 첫 글을 작성해보세요!</div>
+              ) : (
+                <div className="board-grid">
+                  {filteredStudy.map(post => (
+                    <div key={post.id} className="board-card" onClick={() => setStudySelected(post)}>
+                      <div className={`board-thumb board-thumb--${post.type}`}>
+                        {post.type === 'image' && post.imageData
+                          ? <img src={post.imageData} alt={post.title} className="thumb-img" />
+                          : post.type === 'image'
+                            ? <><span className="thumb-icon">🖼</span></>
+                          : post.type === 'video' && post.videoUrl && getYoutubeId(post.videoUrl)
+                            ? <img src={`https://img.youtube.com/vi/${getYoutubeId(post.videoUrl)}/mqdefault.jpg`} alt={post.title} className="thumb-img" />
+                            : post.type === 'video'
+                              ? <><span className="thumb-icon">▶</span><span className="thumb-label">동영상</span></>
+                              : <span className="thumb-icon">📝</span>
+                        }
+                        {post.userCreated && (
+                          <button className="card-delete-btn" onClick={e => handleStudyDelete(post.id, e)} title="삭제">✕</button>
+                        )}
+                      </div>
+                      <div className="board-card-body">
+                        <div className="board-meta">
+                          <span className="board-cat-badge">{post.category}</span>
+                          <span className="board-date">{post.date}</span>
+                        </div>
+                        <h4 className="board-card-title">{post.title}</h4>
+                        <p className="board-card-preview">{post.preview}</p>
+                        <div className="board-tags">
+                          {(post.tags||[]).map(t => <span key={t} className="tag tech">#{t}</span>)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )
+        })()}
       </section>
 
       {/* Contact */}
@@ -540,73 +731,169 @@ export default function AppV3() {
         </div>
       )}
 
-      {/* ── 글 쓰기 모달 ─────────────────────────────────────────── */}
+      {/* ── Study Board 상세 모달 ────────────────────────────────── */}
+      {studySelected && (
+        <div className="modal-overlay" onClick={() => setStudySelected(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-meta">
+                <span className="board-cat-badge">{studySelected.category}</span>
+                <span className="board-date">{studySelected.date}</span>
+              </div>
+              <button className="modal-close" onClick={() => setStudySelected(null)}>✕</button>
+            </div>
+            <h2 className="modal-title">{studySelected.title}</h2>
+            <div className="modal-tags">
+              {(studySelected.tags||[]).map(t => <span key={t} className="tag tech">#{t}</span>)}
+            </div>
+            {studySelected.type === 'image' && studySelected.imageData && (
+              <img src={studySelected.imageData} alt={studySelected.title} className="modal-img" />
+            )}
+            {studySelected.type === 'video' && studySelected.videoUrl && getYoutubeId(studySelected.videoUrl) && (
+              <div className="modal-video-wrap">
+                <iframe src={`https://www.youtube.com/embed/${getYoutubeId(studySelected.videoUrl)}`}
+                  title={studySelected.title} allowFullScreen className="modal-iframe" />
+              </div>
+            )}
+            <div className="modal-content">
+              {studySelected.content.split('\n').map((line, i) => {
+                if (line.startsWith('## '))  return <h3 key={i} className="md-h2">{line.slice(3)}</h3>
+                if (line.startsWith('### ')) return <h4 key={i} className="md-h3">{line.slice(4)}</h4>
+                if (line.startsWith('```'))  return null
+                if (line.trim() === '')      return <br key={i} />
+                return <p key={i} className="md-p">{line}</p>
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 글 쓰기 모달 (모드별 분기) ──────────────────────────── */}
       {showWrite && (
         <div className="modal-overlay" onClick={closeWrite}>
           <div className="modal write-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="write-modal-title">새 글 작성</h2>
+              <h2 className="write-modal-title">
+                {boardMode === 'study' ? '📚 학습 노트 작성' : '💬 새 글 작성'}
+              </h2>
               <button className="modal-close" onClick={closeWrite}>✕</button>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">제목 <span className="required">*</span></label>
-              <input className="form-input" type="text" placeholder="제목을 입력하세요"
-                value={form.title} onChange={e => handleForm('title', e.target.value)} maxLength={100} />
-            </div>
-
-            <div className="form-row">
+            {/* ── 게시판 폼 ── */}
+            {boardMode === 'community' && (<>
               <div className="form-group">
-                <label className="form-label">분류 <span className="required">*</span></label>
-                <select className="form-input form-select" value={form.category}
-                  onChange={e => handleForm('category', e.target.value)}>
-                  {BOARD_CATS.filter(c => c !== '전체').map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <label className="form-label">제목 <span className="required">*</span></label>
+                <input className="form-input" type="text" placeholder="제목을 입력하세요"
+                  value={form.title} onChange={e => handleForm('title', e.target.value)} maxLength={100} />
               </div>
-              <div className="form-group">
-                <label className="form-label">미디어 타입</label>
-                <div className="type-toggle">
-                  {['text','image','video'].map(t => (
-                    <button key={t} className={`type-btn${form.type === t ? ' active' : ''}`}
-                      onClick={() => handleTypeChange(t)}>
-                      {t === 'text' ? '📝 텍스트' : t === 'image' ? '🖼 이미지' : '▶ 동영상'}
-                    </button>
-                  ))}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">분류 <span className="required">*</span></label>
+                  <select className="form-input form-select" value={form.category}
+                    onChange={e => handleForm('category', e.target.value)}>
+                    {BOARD_CATS.filter(c => c !== '전체').map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">미디어 타입</label>
+                  <div className="type-toggle">
+                    {['text','image','video'].map(t => (
+                      <button key={t} className={`type-btn${form.type === t ? ' active' : ''}`}
+                        onClick={() => handleTypeChange(t)}>
+                        {t === 'text' ? '📝 텍스트' : t === 'image' ? '🖼 이미지' : '▶ 동영상'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {form.type === 'image' && (
+              {form.type === 'image' && (
+                <div className="form-group">
+                  <label className="form-label">이미지 <span className="required">*</span> <span className="form-hint">최대 3MB</span></label>
+                  <input ref={fileRef} type="file" accept="image/*" className="form-file" onChange={handleImgFile} />
+                  {imgPreview && <img src={imgPreview} alt="미리보기" className="image-preview" />}
+                </div>
+              )}
+              {form.type === 'video' && (
+                <div className="form-group">
+                  <label className="form-label">동영상 URL <span className="required">*</span></label>
+                  <input className="form-input" type="url" placeholder="https://www.youtube.com/watch?v=..."
+                    value={form.videoUrl} onChange={e => handleForm('videoUrl', e.target.value)} />
+                  {form.videoUrl && getYoutubeId(form.videoUrl) && (
+                    <img src={`https://img.youtube.com/vi/${getYoutubeId(form.videoUrl)}/mqdefault.jpg`}
+                      alt="썸네일" className="image-preview" />
+                  )}
+                </div>
+              )}
               <div className="form-group">
-                <label className="form-label">이미지 업로드 <span className="required">*</span> <span className="form-hint">최대 3MB</span></label>
-                <input ref={fileRef} type="file" accept="image/*" className="form-file" onChange={handleImgFile} />
-                {imgPreview && <img src={imgPreview} alt="미리보기" className="image-preview" />}
+                <label className="form-label">내용 <span className="required">*</span></label>
+                <textarea className="form-textarea" placeholder="내용을 자유롭게 작성하세요."
+                  value={form.content} onChange={e => handleForm('content', e.target.value)} rows={10} />
               </div>
-            )}
-            {form.type === 'video' && (
-              <div className="form-group">
-                <label className="form-label">동영상 URL <span className="required">*</span> <span className="form-hint">YouTube 링크 권장</span></label>
-                <input className="form-input" type="url" placeholder="https://www.youtube.com/watch?v=..."
-                  value={form.videoUrl} onChange={e => handleForm('videoUrl', e.target.value)} />
-                {form.videoUrl && getYoutubeId(form.videoUrl) && (
-                  <img src={`https://img.youtube.com/vi/${getYoutubeId(form.videoUrl)}/mqdefault.jpg`}
-                    alt="YouTube 썸네일" className="image-preview" />
-                )}
-              </div>
-            )}
+            </>)}
 
-            <div className="form-group">
-              <label className="form-label">내용 <span className="required">*</span></label>
-              <textarea className="form-textarea"
-                placeholder="내용을 자유롭게 작성하세요."
-                value={form.content} onChange={e => handleForm('content', e.target.value)} rows={10} />
-            </div>
+            {/* ── Study Board 폼 ── */}
+            {boardMode === 'study' && (<>
+              <div className="form-group">
+                <label className="form-label">제목 <span className="required">*</span></label>
+                <input className="form-input" type="text" placeholder="학습 노트 제목을 입력하세요"
+                  value={studyForm.title} onChange={e => handleStudyForm('title', e.target.value)} maxLength={100} />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">카테고리 <span className="required">*</span></label>
+                  <select className="form-input form-select" value={studyForm.category}
+                    onChange={e => handleStudyForm('category', e.target.value)}>
+                    {STUDY_CATS.filter(c => c !== '전체').map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">미디어 타입</label>
+                  <div className="type-toggle">
+                    {['text','image','video'].map(t => (
+                      <button key={t} className={`type-btn${studyForm.type === t ? ' active' : ''}`}
+                        onClick={() => handleStudyTypeChange(t)}>
+                        {t === 'text' ? '📝 텍스트' : t === 'image' ? '🖼 이미지' : '▶ 동영상'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">태그 <span className="form-hint">쉼표로 구분 (예: React, Hooks)</span></label>
+                <input className="form-input" type="text" placeholder="React, Hooks, Frontend"
+                  value={studyForm.tags} onChange={e => handleStudyForm('tags', e.target.value)} />
+              </div>
+              {studyForm.type === 'image' && (
+                <div className="form-group">
+                  <label className="form-label">이미지 <span className="required">*</span> <span className="form-hint">최대 3MB</span></label>
+                  <input ref={fileRef2} type="file" accept="image/*" className="form-file" onChange={handleStudyImgFile} />
+                  {imgPreview && <img src={imgPreview} alt="미리보기" className="image-preview" />}
+                </div>
+              )}
+              {studyForm.type === 'video' && (
+                <div className="form-group">
+                  <label className="form-label">동영상 URL <span className="required">*</span></label>
+                  <input className="form-input" type="url" placeholder="https://www.youtube.com/watch?v=..."
+                    value={studyForm.videoUrl} onChange={e => handleStudyForm('videoUrl', e.target.value)} />
+                  {studyForm.videoUrl && getYoutubeId(studyForm.videoUrl) && (
+                    <img src={`https://img.youtube.com/vi/${getYoutubeId(studyForm.videoUrl)}/mqdefault.jpg`}
+                      alt="썸네일" className="image-preview" />
+                  )}
+                </div>
+              )}
+              <div className="form-group">
+                <label className="form-label">내용 <span className="required">*</span></label>
+                <textarea className="form-textarea" placeholder="공부한 내용을 자유롭게 작성하세요."
+                  value={studyForm.content} onChange={e => handleStudyForm('content', e.target.value)} rows={10} />
+              </div>
+            </>)}
 
             {formErr && <p className="form-error">{formErr}</p>}
-
             <div className="form-actions">
               <button className="form-cancel" onClick={closeWrite} disabled={submitting}>취소</button>
-              <button className="form-submit" onClick={handleSubmit} disabled={submitting}>
+              <button className="form-submit"
+                onClick={boardMode === 'study' ? handleStudySubmit : handleSubmit}
+                disabled={submitting}>
                 {submitting ? '저장 중...' : '게시하기'}
               </button>
             </div>

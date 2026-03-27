@@ -723,6 +723,32 @@ a { color: inherit; text-decoration: none; }
   border-color: rgba(63, 185, 80, 0.35) !important;
 }
 
+/* ── 모드 전환 탭 (게시판 ↔ Study Board) ── */
+.board-mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  border-bottom: 2px solid var(--border);
+}
+.board-mode-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s, border-color 0.2s;
+}
+.board-mode-tab:hover { color: var(--text); }
+.board-mode-tab.active {
+  color: #3fb950;
+  border-bottom-color: #3fb950;
+}
+
 /* ── 게시판 리스트 ── */
 .blist {
   border-top: 2px solid var(--border);
