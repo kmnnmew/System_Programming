@@ -803,6 +803,26 @@ a { color: inherit; text-decoration: none; }
   flex: 1;
 }
 .blist-media-icon { font-size: 12px; flex-shrink: 0; }
+.blist-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.blist-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.blist-row:hover .blist-edit-btn { opacity: 1; }
+.blist-edit-btn:hover { color: var(--accent); }
 .blist-del-btn {
   background: none;
   border: none;
@@ -838,6 +858,26 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
   margin-bottom: 14px;
 }
+.post-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.post-modal-edit-btn,
+.post-modal-del-btn {
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.post-modal-edit-btn { color: var(--accent); }
+.post-modal-edit-btn:hover { background: rgba(68,147,248,0.12); border-color: var(--accent); }
+.post-modal-del-btn  { color: #f85149; }
+.post-modal-del-btn:hover  { background: rgba(248,81,73,0.1); border-color: #f85149; }
 .post-modal-title {
   font-size: 22px;
   font-weight: 700;
@@ -958,11 +998,31 @@ a { color: inherit; text-decoration: none; }
   color: #f85149;
   background: rgba(248,81,73,0.08);
 }
-.comment-input-row {
+.comment-has-pwd { font-size: 11px; opacity: 0.7; }
+
+.comment-write-area {
   display: flex;
-  gap: 10px;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 8px;
 }
+.comment-write-bottom {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.comment-pwd-input {
+  flex: 0 0 180px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 12px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.comment-pwd-input:focus { outline: none; border-color: #3fb950; }
+.comment-pwd-input::placeholder { color: var(--text2); }
 .comment-textarea {
   flex: 1;
   background: var(--bg3);
@@ -993,6 +1053,23 @@ a { color: inherit; text-decoration: none; }
   transition: background 0.2s;
 }
 .comment-submit-btn:hover { background: #2ea043; }
+
+/* ── 비밀번호 확인 모달 ── */
+.pwd-overlay { z-index: 300; }
+.pwd-modal {
+  max-width: 380px;
+  padding: 32px 36px;
+}
+.pwd-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+.pwd-modal-desc {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 14px;
+}
 
 /* ────────── */
 .write-modal { max-width: 760px; }
