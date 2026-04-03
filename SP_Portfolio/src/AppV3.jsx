@@ -534,6 +534,7 @@ export default function AppV3() {
     reader.readAsDataURL(file)
   }
   async function handleStudySubmit() {
+    setFormErr('Study Board 작성은 v4 로그인 후 이용해주세요.'); return
     if (!studyForm.title.trim())                                   { setFormErr('제목을 입력해주세요.'); return }
     if (!studyForm.content.trim())                                 { setFormErr('내용을 입력해주세요.'); return }
     if (studyForm.type === 'image' && !studyForm.imageData)        { setFormErr('이미지를 업로드해주세요.'); return }

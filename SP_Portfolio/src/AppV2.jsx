@@ -235,6 +235,7 @@ export default function AppV2() {
 
   // 글 제출 → Supabase INSERT
   async function handleSubmit() {
+    setSubmitError('Study Board 작성은 v4 로그인 후 이용해주세요.'); return
     if (!form.title.trim()) { setSubmitError('제목을 입력해주세요.'); return }
     if (!form.content.trim()) { setSubmitError('내용을 입력해주세요.'); return }
     if (form.type === 'image' && !form.imageData) { setSubmitError('이미지를 업로드해주세요.'); return }

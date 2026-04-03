@@ -166,6 +166,7 @@ function shortEmail(email) {
   return email.slice(0, 2) + '***' + email.slice(at)
 }
 
+const OWNER_EMAIL      = 'sdh240411@sdh.hs.kr'
 const EMPTY_FORM       = { title:'', category:'자유',  type:'text', imageData:'', videoUrl:'', content:'' }
 const EMPTY_STUDY_FORM = { title:'', category:'React', type:'text', imageData:'', videoUrl:'', tags:'', content:'' }
 
@@ -514,6 +515,7 @@ export default function AppV4() {
   }
   async function handleStudySubmit() {
     if (!session) { closeWrite(); openAuth('login'); return }
+    if (session.user.email !== OWNER_EMAIL) { setFormErr('Study Board는 관리자만 작성할 수 있습니다.'); return }
     if (!studyForm.title.trim())                                   { setFormErr('제목을 입력해주세요.'); return }
     if (!studyForm.content.trim())                                 { setFormErr('내용을 입력해주세요.'); return }
     if (studyForm.type === 'image' && !studyForm.imageData)        { setFormErr('이미지를 업로드해주세요.'); return }
@@ -803,7 +805,7 @@ export default function AppV4() {
                               ? <><span className="thumb-icon">▶</span><span className="thumb-label">동영상</span></>
                               : <span className="thumb-icon">📝</span>
                         }
-                        {post.userCreated && (
+                        {post.userCreated && session?.user?.email === OWNER_EMAIL && (
                           <button className="card-delete-btn" onClick={e => handleStudyDelete(post.id, e)} title="삭제">✕</button>
                         )}
                       </div>
