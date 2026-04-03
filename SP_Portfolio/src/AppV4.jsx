@@ -704,9 +704,11 @@ export default function AppV4() {
                 <button onClick={() => openAuth('login')}>로그인</button>하면 글을 작성할 수 있어요.
               </span>
             )}
-            <button className="write-btn" onClick={() => session ? setShowWrite(true) : openAuth('login')}>
-              + 글 쓰기
-            </button>
+            {(boardMode !== 'study' || session?.user?.email === OWNER_EMAIL) && (
+              <button className="write-btn" onClick={() => session ? setShowWrite(true) : openAuth('login')}>
+                + 글 쓰기
+              </button>
+            )}
           </div>
         </div>
 
