@@ -564,7 +564,6 @@ export default function AppV4() {
       <nav className="nav">
         <div className="nav-left">
           <span className="nav-name">심하윤</span>
-          <span className="ver-badge v4-badge">v4</span>
         </div>
         <div className="nav-links">
           <a href="#about">About</a>
@@ -573,7 +572,6 @@ export default function AppV4() {
           <a href="#awards">Awards</a>
           <a href="#board">Board</a>
           <a href="#contact">Contact</a>
-          <a href="#v3" className="nav-ver-switch">← v3</a>
           {session ? (
             <div className="auth-nav">
               <span className="auth-email">{shortEmail(session.user.email)}</span>
