@@ -144,6 +144,12 @@ export default function AppV4() {
   const [studySelected, setStudySelected] = useState(null)
   const [studyForm,     setStudyForm]     = useState(EMPTY_STUDY_FORM)
 
+  // ── GitHub Repos
+  const [githubRepos,   setGithubRepos]   = useState([])
+
+  // ── Solved.ac
+  const [solvedData,    setSolvedData]    = useState(null)
+
   const filtered  = activeCat === "전체" ? dbPosts : dbPosts.filter(p => p.category === activeCat)
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
 
@@ -180,6 +186,32 @@ export default function AppV4() {
       }
       setStudyLoading(false)
     })()
+  }, [])
+
+  // ── GitHub 핀 레포 로드
+  useEffect(() => {
+    const query = `{ user(login: "kmnnmew") { pinnedItems(first: 6, types: REPOSITORY) { nodes { ... on Repository { name description url stargazerCount forkCount primaryLanguage { name color } updatedAt } } } } }`
+    fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: `bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        const nodes = d?.data?.user?.pinnedItems?.nodes || []
+        setGithubRepos(nodes)
+      })
+      .catch(() => {})
+  }, [])
+
+  // ── Solved.ac 로드
+  useEffect(() => {
+    supabase.functions.invoke('solved-proxy', { body: { handle: 'shy3411' } })
+      .then(({ data }) => { if (data && data.handle) setSolvedData(data) })
+      .catch(() => {})
   }, [])
 
   // ── Auth 핸들러
@@ -548,6 +580,26 @@ export default function AppV4() {
             <div className="tags">{portfolio.skills.experience.map(s => <span key={s} className="tag exp">{s}</span>)}</div>
           </div>
         </div>
+        {solvedData && (
+          <div className="solved-widget">
+            <div className="solved-left">
+              <img
+                src={`https://static.solved.ac/tier_small/${solvedData.tier}.svg`}
+                alt={`tier ${solvedData.tier}`}
+                className="solved-tier-img"
+              />
+              <div>
+                <div className="solved-handle">{solvedData.handle}</div>
+                <div className="solved-sub">Baekjoon / solved.ac</div>
+              </div>
+            </div>
+            <div className="solved-stats">
+              <div className="solved-stat"><span className="solved-num">{solvedData.solvedCount?.toLocaleString()}</span><span className="solved-label">해결한 문제</span></div>
+              <div className="solved-stat"><span className="solved-num">{solvedData.rating?.toLocaleString()}</span><span className="solved-label">레이팅</span></div>
+              <div className="solved-stat"><span className="solved-num">{solvedData.rank?.toLocaleString()}</span><span className="solved-label">전체 랭킹</span></div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Projects */}
@@ -569,6 +621,35 @@ export default function AppV4() {
             </div>
           ))}
         </div>
+
+        {githubRepos.length > 0 && (
+          <>
+            <h4 className="gh-section-title">
+              <svg className="gh-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub Repositories
+            </h4>
+            <div className="gh-grid">
+              {githubRepos.map(repo => (
+                <a key={repo.name} href={repo.url} target="_blank" rel="noreferrer" className="gh-card">
+                  <div className="gh-card-top">
+                    <span className="gh-repo-name">{repo.name}</span>
+                  </div>
+                  <p className="gh-desc">{repo.description || '설명 없음'}</p>
+                  <div className="gh-footer">
+                    {repo.primaryLanguage && (
+                      <span className="gh-lang">
+                        <span className="gh-lang-dot" style={{ background: repo.primaryLanguage.color || '#888' }} />
+                        {repo.primaryLanguage.name}
+                      </span>
+                    )}
+                    {repo.stargazerCount > 0 && <span className="gh-stat">⭐ {repo.stargazerCount}</span>}
+                    {repo.forkCount > 0 && <span className="gh-stat">🍴 {repo.forkCount}</span>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Awards */}
