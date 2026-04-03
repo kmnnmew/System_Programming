@@ -192,27 +192,37 @@ export default function AppV4() {
     })()
   }, [])
 
+  // ── 공통 Edge Function 호출 헬퍼
+  const FN_URL = 'https://izdhrcrrsaapbnclzcsp.supabase.co/functions/v1'
+  const FN_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGhyY3Jyc2FhcGJuY2x6Y3NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzU0MzAsImV4cCI6MjA5MDE1MTQzMH0.yi1XfEkk5CXmtVhJ2sPDsIwLw-N4rfycNOr9kw1Xksc'
+  const fnFetch = (name, body = {}) =>
+    fetch(`${FN_URL}/${name}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FN_KEY}` },
+      body: JSON.stringify(body),
+    }).then(r => r.json())
+
   // ── GitHub 핀 레포 로드
   useEffect(() => {
-    supabase.functions.invoke('github-repos')
-      .then(({ data }) => { if (Array.isArray(data)) setGithubRepos(data) })
+    fnFetch('github-repos')
+      .then(data => { if (Array.isArray(data)) setGithubRepos(data) })
       .catch(() => {})
   }, [])
 
   // ── GitHub 잔디 로드
   useEffect(() => {
-    supabase.functions.invoke('github-contributions')
-      .then(({ data }) => { if (data && data.weeks) setContributions(data) })
+    fnFetch('github-contributions')
+      .then(data => { if (data && data.weeks) setContributions(data) })
       .catch(() => {})
   }, [])
 
   // ── Solved.ac 로드
   useEffect(() => {
-    supabase.functions.invoke('solved-proxy', { body: { handle: 'shy3411' } })
-      .then(({ data }) => { if (data && data.handle) setSolvedData(data) })
+    fnFetch('solved-proxy', { handle: 'shy3411' })
+      .then(data => { if (data && data.handle) setSolvedData(data) })
       .catch(() => {})
-    supabase.functions.invoke('solved-proxy', { body: { handle: 'shy3411', type: 'tags' } })
-      .then(({ data }) => {
+    fnFetch('solved-proxy', { handle: 'shy3411', type: 'tags' })
+      .then(data => {
         if (data && Array.isArray(data.items)) {
           const top = [...data.items]
             .sort((a, b) => b.solved - a.solved)
