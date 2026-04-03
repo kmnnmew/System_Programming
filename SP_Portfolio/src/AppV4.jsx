@@ -659,11 +659,9 @@ export default function AppV4() {
                       )}
                     </span>
                     <span className="blist-col-stat blist-likes">
-                      {(post.likes||0) > 0
-                        ? <span className="blist-likes-hot">{post.likes}</span>
-                        : <span className="blist-likes-zero">{post.likes||0}</span>}
+                      {(post.likes||0) > 0 && <span className="blist-likes-hot">{post.likes}</span>}
                     </span>
-                    <span className="blist-col-stat blist-views">{post.views||0}</span>
+                    <span className="blist-col-stat blist-views">{(post.views||0) > 0 ? post.views : ''}</span>
                     <span className="blist-col-date blist-date">{formatShortDate(post.date)}</span>
                   </div>
                 ))}
@@ -754,7 +752,7 @@ export default function AppV4() {
             </div>
             <h2 className="post-modal-title">{selectedPost.title}</h2>
             <div className="post-modal-meta">
-              <span>조회 {selectedPost.views || 0}</span>
+              {(selectedPost.views||0) > 0 && <span>조회 {selectedPost.views}</span>}
               <span>{selectedPost.date}</span>
             </div>
             <div className="post-modal-divider" />
@@ -786,13 +784,13 @@ export default function AppV4() {
                 className={`vote-btn vote-like${votes[selectedPost.id] === 'like' ? ' voted' : ''}`}
                 onClick={() => handleVote(selectedPost.id, 'like')}
               >
-                👍 추천 <span className="vote-count">{selectedPost.likes || 0}</span>
+                👍 추천 {(selectedPost.likes||0) > 0 && <span className="vote-count">{selectedPost.likes}</span>}
               </button>
               <button
                 className={`vote-btn vote-dislike${votes[selectedPost.id] === 'dislike' ? ' voted' : ''}`}
                 onClick={() => handleVote(selectedPost.id, 'dislike')}
               >
-                👎 비추천 <span className="vote-count">{selectedPost.dislikes || 0}</span>
+                👎 비추천 {(selectedPost.dislikes||0) > 0 && <span className="vote-count">{selectedPost.dislikes}</span>}
               </button>
             </div>
 
