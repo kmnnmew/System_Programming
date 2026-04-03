@@ -145,10 +145,14 @@ export default function AppV4() {
   const [studyForm,     setStudyForm]     = useState(EMPTY_STUDY_FORM)
 
   // ── GitHub Repos
-  const [githubRepos,   setGithubRepos]   = useState([])
+  const [githubRepos,    setGithubRepos]    = useState([])
+
+  // ── GitHub Contributions
+  const [contributions,  setContributions]  = useState(null)
 
   // ── Solved.ac
-  const [solvedData,    setSolvedData]    = useState(null)
+  const [solvedData,     setSolvedData]     = useState(null)
+  const [solvedTags,     setSolvedTags]     = useState([])
 
   const filtered  = activeCat === "전체" ? dbPosts : dbPosts.filter(p => p.category === activeCat)
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
@@ -195,10 +199,31 @@ export default function AppV4() {
       .catch(() => {})
   }, [])
 
+  // ── GitHub 잔디 로드
+  useEffect(() => {
+    supabase.functions.invoke('github-contributions')
+      .then(({ data }) => { if (data && data.weeks) setContributions(data) })
+      .catch(() => {})
+  }, [])
+
   // ── Solved.ac 로드
   useEffect(() => {
     supabase.functions.invoke('solved-proxy', { body: { handle: 'shy3411' } })
       .then(({ data }) => { if (data && data.handle) setSolvedData(data) })
+      .catch(() => {})
+    supabase.functions.invoke('solved-proxy', { body: { handle: 'shy3411', type: 'tags' } })
+      .then(({ data }) => {
+        if (data && Array.isArray(data.items)) {
+          const top = [...data.items]
+            .sort((a, b) => b.solved - a.solved)
+            .slice(0, 8)
+            .map(item => ({
+              name: item.tag.displayNames?.find(d => d.language === 'ko')?.name || item.tag.key,
+              solved: item.solved,
+            }))
+          setSolvedTags(top)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -531,6 +556,36 @@ export default function AppV4() {
               ))}
             </div>
           </div>
+          {contributions && (
+            <div className="contrib-wrap">
+              <div className="contrib-header">
+                <span className="contrib-title">GitHub Contributions</span>
+                <span className="contrib-total">{contributions.totalContributions.toLocaleString()} contributions in the last year</span>
+              </div>
+              <div className="contrib-graph">
+                {contributions.weeks.map((week, wi) => (
+                  <div key={wi} className="contrib-col">
+                    {week.contributionDays.map(day => (
+                      <div
+                        key={day.date}
+                        className="contrib-cell"
+                        style={{ background: day.color }}
+                        title={`${day.date}: ${day.contributionCount} contributions`}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="contrib-legend">
+                <span>Less</span>
+                {['#161b22','#0e4429','#006d32','#26a641','#39d353'].map(c => (
+                  <span key={c} className="contrib-cell" style={{ background: c }} />
+                ))}
+                <span>More</span>
+              </div>
+            </div>
+          )}
+
           <div className="about-grid">
             <div className="about-block">
               <h4>학교 생활</h4>
@@ -568,24 +623,45 @@ export default function AppV4() {
             <div className="tags">{portfolio.skills.experience.map(s => <span key={s} className="tag exp">{s}</span>)}</div>
           </div>
         </div>
-        {solvedData && (
-          <div className="solved-widget">
-            <div className="solved-left">
-              <img
-                src={`https://static.solved.ac/tier_small/${solvedData.tier}.svg`}
-                alt={`tier ${solvedData.tier}`}
-                className="solved-tier-img"
-              />
-              <div>
-                <div className="solved-handle">{solvedData.handle}</div>
-                <div className="solved-sub">Baekjoon / solved.ac</div>
+        {(solvedData || solvedTags.length > 0) && (
+          <div className="solved-section">
+            {solvedData && (
+              <div className="solved-widget">
+                <div className="solved-left">
+                  <img
+                    src={`https://static.solved.ac/tier_small/${solvedData.tier}.svg`}
+                    alt={`tier ${solvedData.tier}`}
+                    className="solved-tier-img"
+                  />
+                  <div>
+                    <div className="solved-handle">{solvedData.handle}</div>
+                    <div className="solved-sub">Baekjoon / solved.ac</div>
+                  </div>
+                </div>
+                <div className="solved-stats">
+                  <div className="solved-stat"><span className="solved-num">{solvedData.solvedCount?.toLocaleString()}</span><span className="solved-label">해결한 문제</span></div>
+                  <div className="solved-stat"><span className="solved-num">{solvedData.rating?.toLocaleString()}</span><span className="solved-label">레이팅</span></div>
+                  <div className="solved-stat"><span className="solved-num">{solvedData.rank?.toLocaleString()}</span><span className="solved-label">전체 랭킹</span></div>
+                </div>
               </div>
-            </div>
-            <div className="solved-stats">
-              <div className="solved-stat"><span className="solved-num">{solvedData.solvedCount?.toLocaleString()}</span><span className="solved-label">해결한 문제</span></div>
-              <div className="solved-stat"><span className="solved-num">{solvedData.rating?.toLocaleString()}</span><span className="solved-label">레이팅</span></div>
-              <div className="solved-stat"><span className="solved-num">{solvedData.rank?.toLocaleString()}</span><span className="solved-label">전체 랭킹</span></div>
-            </div>
+            )}
+            {solvedTags.length > 0 && (() => {
+              const max = solvedTags[0].solved
+              return (
+                <div className="tag-chart">
+                  <div className="tag-chart-title">유형별 해결 문제</div>
+                  {solvedTags.map(t => (
+                    <div key={t.name} className="tag-bar-row">
+                      <span className="tag-bar-label">{t.name}</span>
+                      <div className="tag-bar-track">
+                        <div className="tag-bar-fill" style={{ width: `${(t.solved / max) * 100}%` }} />
+                      </div>
+                      <span className="tag-bar-count">{t.solved}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
         )}
       </section>
