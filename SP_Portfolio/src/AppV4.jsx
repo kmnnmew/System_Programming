@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import './AppV3.css'
+import './AppV4.css'
 import { supabase } from './supabase'
 
 // ── 포트폴리오 데이터 ─────────────────────────────────────────────
@@ -68,9 +68,10 @@ const portfolio = {
 }
 
 // ── 게시판 설정 ────────────────────────────────────────────────────
-const BOARD_CATS = ["전체", "자유", "질문", "정보", "이슈", "기타"]
-const STUDY_CATS = ["전체", "React", "JavaScript", "Java", "Python", "DB", "기타"]
-const VOTES_KEY  = 'v3_votes' // { postId: 'like' | 'dislike' }
+const BOARD_CATS    = ["전체", "자유", "질문", "정보", "이슈", "기타"]
+const STUDY_CATS    = ["전체", "React", "JavaScript", "Java", "Python", "DB", "기타"]
+const VOTES_KEY     = 'v4_votes'
+const DUMMY_VOTES_KEY = 'v4_dummy_votes'
 
 // ── Study Board 더미 게시글 ────────────────────────────────────────
 const STUDY_DUMMY = [
@@ -111,44 +112,37 @@ const DUMMY_POSTS = [
   {
     id: 'dummy-1', category: '자유', title: '포트폴리오 사이트 드디어 완성했습니다 🎉',
     content: 'React + Supabase로 포트폴리오 사이트를 만들었어요. 처음에는 단순한 정적 페이지였는데 이제 게시판까지 붙었네요. 앞으로도 계속 기능을 추가할 예정입니다!',
-    views: 142, likes: 18, dislikes: 0,
-    date: '2026.03.27', type: 'text',
+    views: 142, likes: 18, dislikes: 0, date: '2026.03.27', type: 'text',
   },
   {
     id: 'dummy-2', category: '질문', title: 'React useEffect 의존성 배열 관련 질문이요',
     content: 'useEffect에서 의존성 배열을 빈 배열로 두면 마운트 시 한 번만 실행된다고 알고 있는데, 그럼 특정 state가 변경될 때마다 실행하려면 어떻게 해야 하나요?\n\n예를 들어 count가 바뀔 때마다 API를 호출하고 싶은 경우요.',
-    views: 87, likes: 7, dislikes: 1,
-    date: '2026.03.26', type: 'text',
+    views: 87, likes: 7, dislikes: 1, date: '2026.03.26', type: 'text',
   },
   {
     id: 'dummy-3', category: '정보', title: 'Supabase 무료 플랜 제한 정리 (2026 기준)',
     content: 'Supabase 무료 플랜 주요 제한 사항 정리:\n\n- DB 용량: 500MB\n- 파일 스토리지: 1GB\n- 월간 API 요청: 무제한\n- 동시 접속: 최대 50개\n- 프로젝트 2개까지 무료\n- 비활성 1주일 시 자동 일시정지\n\n포트폴리오 정도 규모라면 무료 플랜으로 충분합니다.',
-    views: 203, likes: 31, dislikes: 2,
-    date: '2026.03.25', type: 'text',
+    views: 203, likes: 31, dislikes: 2, date: '2026.03.25', type: 'text',
   },
   {
     id: 'dummy-4', category: '이슈', title: 'GitHub Pages 배포 후 새로고침하면 404 뜨는 문제',
     content: 'SPA를 GitHub Pages에 배포하면 새로고침 시 404가 뜨는 문제가 있습니다.\n\n해결책:\n1. vite.config.js에서 base 경로 설정\n2. 404.html을 index.html로 복사하는 방법\n3. HashRouter 사용 (#/ 방식)\n\n저는 HashRouter 방식으로 해결했어요. 가장 간단합니다.',
-    views: 156, likes: 22, dislikes: 1,
-    date: '2026.03.24', type: 'text',
+    views: 156, likes: 22, dislikes: 1, date: '2026.03.24', type: 'text',
   },
   {
     id: 'dummy-5', category: '자유', title: '데이터안심구역 경진대회 수상 후기',
     content: '한국데이터산업진흥원 주관 데이터안심구역 활용 경진대회에서 데이터미래인재특별상을 받았습니다.\n\n공간정보 데이터를 활용해서 분석 모델을 만들었는데 생각보다 결과가 좋게 나왔어요. GeoPandas로 지역별 데이터를 시각화한 게 심사위원들한테 인상 깊었던 것 같습니다.',
-    views: 98, likes: 14, dislikes: 0,
-    date: '2026.03.22', type: 'text',
+    views: 98, likes: 14, dislikes: 0, date: '2026.03.22', type: 'text',
   },
   {
     id: 'dummy-6', category: '질문', title: 'JSP에서 파일 업로드 구현하는 방법',
     content: 'JSP + Servlet 환경에서 이미지 파일 업로드를 구현하려고 합니다.\nMultipart 처리를 어떻게 하면 좋을까요?\n\nApache Commons FileUpload 라이브러리를 써야 하나요, 아니면 다른 방법이 있나요?',
-    views: 64, likes: 3, dislikes: 0,
-    date: '2026.03.21', type: 'text',
+    views: 64, likes: 3, dislikes: 0, date: '2026.03.21', type: 'text',
   },
   {
     id: 'dummy-7', category: '정보', title: 'Git 브랜치 전략 — 혼자 쓸 때 추천 방법',
     content: '개인 프로젝트에서 쓰기 좋은 간단한 브랜치 전략:\n\n- main: 배포 브랜치 (항상 배포 가능 상태)\n- develop: 개발 브랜치\n- feature/기능명: 새 기능 개발\n\n혼자 할 때는 main + feature 정도만 써도 충분합니다. 너무 복잡하게 나눌 필요 없어요.',
-    views: 177, likes: 25, dislikes: 0,
-    date: '2026.03.20', type: 'text',
+    views: 177, likes: 25, dislikes: 0, date: '2026.03.20', type: 'text',
   },
 ]
 
@@ -163,23 +157,39 @@ function formatDate(date = new Date()) {
 }
 function formatShortDate(str) {
   if (!str) return ''
-  return str.slice(5) // "2026.03.27" → "03.27"
+  return str.slice(5)
+}
+function shortEmail(email) {
+  if (!email) return ''
+  const at = email.indexOf('@')
+  if (at <= 2) return email
+  return email.slice(0, 2) + '***' + email.slice(at)
 }
 
-const EMPTY_FORM       = { title:'', category:'자유',  type:'text', imageData:'', videoUrl:'', content:'', password:'' }
+const EMPTY_FORM       = { title:'', category:'자유',  type:'text', imageData:'', videoUrl:'', content:'' }
 const EMPTY_STUDY_FORM = { title:'', category:'React', type:'text', imageData:'', videoUrl:'', tags:'', content:'' }
-const DUMMY_VOTES_KEY  = 'v3_dummy_votes' // { postId: { likes, dislikes } }
 
 // ── 컴포넌트 ──────────────────────────────────────────────────────
-export default function AppV3() {
+export default function AppV4() {
+  // ── Auth
+  const [session,        setSession]        = useState(null)
+  const [authModal,      setAuthModal]      = useState(false)
+  const [authTab,        setAuthTab]        = useState('login')
+  const [authEmail,      setAuthEmail]      = useState('')
+  const [authPwd,        setAuthPwd]        = useState('')
+  const [authPwdConfirm, setAuthPwdConfirm] = useState('')
+  const [authErr,        setAuthErr]        = useState('')
+  const [authSuccess,    setAuthSuccess]    = useState('')
+  const [authLoading,    setAuthLoading]    = useState(false)
+
   // ── 공통
   const [boardMode,    setBoardMode]   = useState('community')
   const [showWrite,    setShowWrite]   = useState(false)
   const [imgPreview,   setImgPreview]  = useState('')
   const [formErr,      setFormErr]     = useState('')
   const [submitting,   setSubmitting]  = useState(false)
-  const fileRef     = useRef(null)
-  const fileRef2    = useRef(null)
+  const fileRef   = useRef(null)
+  const fileRef2  = useRef(null)
   const editFileRef = useRef(null)
 
   // ── 게시판 (community)
@@ -188,29 +198,20 @@ export default function AppV3() {
   const [activeCat,    setActiveCat]   = useState("전체")
   const [selectedPost, setSelectedPost]= useState(null)
   const [form,         setForm]        = useState(EMPTY_FORM)
-  const [votes, setVotes] = useState(() => {
+  const [votes,        setVotes]       = useState(() => {
     try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}') } catch { return {} }
   })
-  // 더미 포스트 추천/비추천 수 (localStorage 저장)
   const [dummyCounts, setDummyCounts] = useState(() => {
     try { return JSON.parse(localStorage.getItem(DUMMY_VOTES_KEY) || '{}') } catch { return {} }
   })
+  const [editingPost,  setEditingPost] = useState(null)
+  const [editForm,     setEditForm]    = useState(EMPTY_FORM)
 
   // ── 댓글
   const [comments,        setComments]        = useState([])
   const [commentText,     setCommentText]     = useState('')
-  const [commentPwd,      setCommentPwd]      = useState('')
   const [commentsLoading, setCommentsLoading] = useState(false)
-  const [commentCounts,   setCommentCounts]   = useState({}) // { postId: count }
-
-  // ── 수정 모달
-  const [editingPost, setEditingPost] = useState(null)
-  const [editForm,    setEditForm]    = useState(EMPTY_FORM)
-
-  // ── 비밀번호 확인 모달
-  const [pwdModal, setPwdModal] = useState(null) // { title, onConfirm }
-  const [pwdInput, setPwdInput] = useState('')
-  const [pwdError, setPwdError] = useState('')
+  const [commentCounts,   setCommentCounts]   = useState({})
 
   // ── Study Board
   const [studyDbPosts,  setStudyDbPosts]  = useState([])
@@ -219,28 +220,34 @@ export default function AppV3() {
   const [studySelected, setStudySelected] = useState(null)
   const [studyForm,     setStudyForm]     = useState(EMPTY_STUDY_FORM)
 
-  // ── 전체 게시글: DB + 더미 ───────────────────────────────────────
-  // 더미 포스트에 최신 추천/비추천 수 반영
+  // ── 전체 게시글: DB + 더미
   const mergedDummy = DUMMY_POSTS.map(p => ({
     ...p,
     likes:    dummyCounts[p.id]?.likes    ?? p.likes,
     dislikes: dummyCounts[p.id]?.dislikes ?? p.dislikes,
   }))
-  const allPosts = [...dbPosts, ...mergedDummy]
-  const filtered = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
+  const allPosts  = [...dbPosts, ...mergedDummy]
+  const filtered  = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
 
-  // ── Supabase 로드 (게시판) ────────────────────────────────────────
+  // ── Auth 세션 감지
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // ── Supabase 로드 (게시판)
   useEffect(() => {
     ;(async () => {
       setLoading(true)
-      const { data } = await supabase.from('board_posts').select('*').order('created_at', { ascending: false })
+      const { data } = await supabase.from('v4_board_posts').select('*').order('created_at', { ascending: false })
       if (data) setDbPosts(data)
       setLoading(false)
     })()
   }, [])
 
-  // ── Supabase 로드 (Study Board) ───────────────────────────────────
+  // ── Supabase 로드 (Study Board)
   useEffect(() => {
     ;(async () => {
       setStudyLoading(true)
@@ -258,12 +265,45 @@ export default function AppV3() {
     })()
   }, [])
 
-  // ── 게시글 열기 (조회수 증가 + 댓글 로드) ─────────────────────
+  // ── Auth 핸들러
+  function openAuth(tab = 'login') {
+    setAuthTab(tab); setAuthEmail(''); setAuthPwd(''); setAuthPwdConfirm('')
+    setAuthErr(''); setAuthSuccess(''); setAuthModal(true)
+  }
+  function closeAuth() {
+    setAuthModal(false); setAuthErr(''); setAuthSuccess('')
+  }
+  async function handleLogin() {
+    setAuthErr(''); setAuthSuccess(''); setAuthLoading(true)
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authEmail.trim(), password: authPwd,
+    })
+    setAuthLoading(false)
+    if (error) { setAuthErr(error.message); return }
+    closeAuth()
+  }
+  async function handleSignup() {
+    setAuthErr(''); setAuthSuccess('')
+    if (!authEmail.trim()) { setAuthErr('이메일을 입력해주세요.'); return }
+    if (authPwd.length < 6) { setAuthErr('비밀번호는 6자 이상이어야 합니다.'); return }
+    if (authPwd !== authPwdConfirm) { setAuthErr('비밀번호가 일치하지 않습니다.'); return }
+    setAuthLoading(true)
+    const { error } = await supabase.auth.signUp({ email: authEmail.trim(), password: authPwd })
+    setAuthLoading(false)
+    if (error) { setAuthErr(error.message); return }
+    setAuthSuccess('가입 완료! 이메일을 확인하여 인증 후 로그인해주세요.')
+    setAuthEmail(''); setAuthPwd(''); setAuthPwdConfirm('')
+  }
+  async function handleLogout() {
+    await supabase.auth.signOut()
+  }
+
+  // ── 게시글 열기 (조회수 + 댓글 로드)
   async function handleOpen(post) {
     const fresh = { ...post }
     if (!String(post.id).startsWith('dummy')) {
       const newViews = (post.views || 0) + 1
-      await supabase.from('board_posts').update({ views: newViews }).eq('id', post.id)
+      await supabase.from('v4_board_posts').update({ views: newViews }).eq('id', post.id)
       fresh.views = newViews
       setDbPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: newViews } : p))
     }
@@ -272,17 +312,18 @@ export default function AppV3() {
     setCommentText('')
     if (!String(post.id).startsWith('dummy')) {
       setCommentsLoading(true)
-      const { data } = await supabase.from('comments').select('*').eq('post_id', post.id).order('created_at', { ascending: true })
+      const { data } = await supabase.from('v4_comments').select('*')
+        .eq('post_id', post.id).order('created_at', { ascending: true })
       setComments(data || [])
       setCommentsLoading(false)
     }
   }
 
-  // ── 추천 / 비추천 ────────────────────────────────────────────────
+  // ── 추천 / 비추천
   async function handleVote(postId, type) {
     const isDummy = String(postId).startsWith('dummy')
     const current = votes[postId]
-    if (current === type) return // 이미 같은 투표
+    if (current === type) return
 
     const newVotes = { ...votes, [postId]: type }
     setVotes(newVotes)
@@ -291,14 +332,9 @@ export default function AppV3() {
     if (isDummy) {
       const base = DUMMY_POSTS.find(p => p.id === postId)
       const prev = dummyCounts[postId] || { likes: base.likes, dislikes: base.dislikes }
-      const upd = { ...prev }
-      if (type === 'like') {
-        upd.likes = upd.likes + 1
-        if (current === 'dislike') upd.dislikes = Math.max(0, upd.dislikes - 1)
-      } else {
-        upd.dislikes = upd.dislikes + 1
-        if (current === 'like') upd.likes = Math.max(0, upd.likes - 1)
-      }
+      const upd  = { ...prev }
+      if (type === 'like')    { upd.likes    += 1; if (current === 'dislike') upd.dislikes = Math.max(0, upd.dislikes-1) }
+      else                    { upd.dislikes += 1; if (current === 'like')    upd.likes    = Math.max(0, upd.likes-1) }
       const newDummy = { ...dummyCounts, [postId]: upd }
       setDummyCounts(newDummy)
       localStorage.setItem(DUMMY_VOTES_KEY, JSON.stringify(newDummy))
@@ -307,83 +343,65 @@ export default function AppV3() {
       const target = dbPosts.find(p => p.id === postId)
       if (!target) return
       const upd = {}
-      if (type === 'like') {
-        upd.likes = (target.likes || 0) + 1
-        if (current === 'dislike') upd.dislikes = Math.max(0, (target.dislikes || 0) - 1)
-      } else {
-        upd.dislikes = (target.dislikes || 0) + 1
-        if (current === 'like') upd.likes = Math.max(0, (target.likes || 0) - 1)
-      }
-      await supabase.from('board_posts').update(upd).eq('id', postId)
+      if (type === 'like')    { upd.likes    = (target.likes||0)+1;    if (current==='dislike') upd.dislikes = Math.max(0,(target.dislikes||0)-1) }
+      else                    { upd.dislikes = (target.dislikes||0)+1; if (current==='like')    upd.likes    = Math.max(0,(target.likes||0)-1) }
+      await supabase.from('v4_board_posts').update(upd).eq('id', postId)
       setDbPosts(prev => prev.map(p => p.id === postId ? { ...p, ...upd } : p))
       setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
     }
   }
 
-  // ── 댓글 ─────────────────────────────────────────────────────────
+  // ── 댓글
   async function handleAddComment() {
     if (!commentText.trim() || !selectedPost || String(selectedPost.id).startsWith('dummy')) return
-    const { data, error } = await supabase.from('comments').insert([{
-      post_id:  selectedPost.id,
-      content:  commentText.trim(),
-      date:     formatDate(),
-      password: commentPwd.trim() || null,
+    if (!session) { openAuth('login'); return }
+    const { data, error } = await supabase.from('v4_comments').insert([{
+      post_id: selectedPost.id,
+      user_id: session.user.id,
+      content: commentText.trim(),
+      date:    formatDate(),
     }]).select().single()
     if (error) { alert('댓글 저장 실패: ' + error.message); return }
     setComments(prev => [...prev, data])
     setCommentText('')
-    setCommentPwd('')
-    setCommentCounts(prev => ({ ...prev, [selectedPost.id]: (prev[selectedPost.id] || 0) + 1 }))
+    setCommentCounts(prev => ({ ...prev, [selectedPost.id]: (prev[selectedPost.id]||0)+1 }))
   }
   async function handleDeleteComment(comment) {
-    if (!comment.password) {
-      if (!confirm('댓글을 삭제할까요?')) return
-      await _doDeleteComment(comment.id)
-      return
-    }
-    openPwdModal('댓글 삭제', async (pwd) => {
-      if (pwd !== comment.password) { setPwdError('비밀번호가 틀렸습니다.'); return }
-      closePwdModal()
-      await _doDeleteComment(comment.id)
-    })
-  }
-  async function _doDeleteComment(commentId) {
-    const { error } = await supabase.from('comments').delete().eq('id', commentId)
+    if (session?.user?.id !== comment.user_id) return
+    if (!confirm('댓글을 삭제할까요?')) return
+    const { error } = await supabase.from('v4_comments').delete().eq('id', comment.id)
     if (error) { alert('삭제 실패: ' + error.message); return }
-    setComments(prev => prev.filter(c => c.id !== commentId))
+    setComments(prev => prev.filter(c => c.id !== comment.id))
     if (selectedPost) {
-      setCommentCounts(prev => ({ ...prev, [selectedPost.id]: Math.max(0, (prev[selectedPost.id] || 0) - 1) }))
+      setCommentCounts(prev => ({ ...prev, [selectedPost.id]: Math.max(0,(prev[selectedPost.id]||0)-1) }))
     }
   }
 
-  // ── 글 쓰기 ──────────────────────────────────────────────────────
+  // ── 글 쓰기
   function handleForm(field, val) { setForm(prev => ({ ...prev, [field]: val })) }
   function handleTypeChange(type) {
-    setForm(prev => ({ ...prev, type, imageData: '', videoUrl: '' }))
+    setForm(prev => ({ ...prev, type, imageData:'', videoUrl:'' }))
     setImgPreview('')
     if (fileRef.current) fileRef.current.value = ''
   }
   function handleImgFile(e) {
     const file = e.target.files[0]
     if (!file) return
-    if (file.size > 3 * 1024 * 1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
+    if (file.size > 3*1024*1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
     setFormErr('')
     const reader = new FileReader()
-    reader.onload = ev => {
-      setImgPreview(ev.target.result)
-      setForm(prev => ({ ...prev, imageData: ev.target.result }))
-    }
+    reader.onload = ev => { setImgPreview(ev.target.result); setForm(prev => ({ ...prev, imageData: ev.target.result })) }
     reader.readAsDataURL(file)
   }
-
   async function handleSubmit() {
-    if (!form.title.trim())                              { setFormErr('제목을 입력해주세요.'); return }
-    if (!form.content.trim())                            { setFormErr('내용을 입력해주세요.'); return }
-    if (form.type === 'image' && !form.imageData)        { setFormErr('이미지를 업로드해주세요.'); return }
-    if (form.type === 'video' && !form.videoUrl.trim())  { setFormErr('동영상 URL을 입력해주세요.'); return }
+    if (!session) { openAuth('login'); return }
+    if (!form.title.trim())                             { setFormErr('제목을 입력해주세요.'); return }
+    if (!form.content.trim())                           { setFormErr('내용을 입력해주세요.'); return }
+    if (form.type === 'image' && !form.imageData)       { setFormErr('이미지를 업로드해주세요.'); return }
+    if (form.type === 'video' && !form.videoUrl.trim()) { setFormErr('동영상 URL을 입력해주세요.'); return }
 
     setSubmitting(true)
-    const { data, error } = await supabase.from('board_posts').insert([{
+    const { data, error } = await supabase.from('v4_board_posts').insert([{
       title:      form.title.trim(),
       content:    form.content.trim(),
       category:   form.category,
@@ -392,100 +410,53 @@ export default function AppV3() {
       video_url:  form.videoUrl.trim() || null,
       views: 0, likes: 0, dislikes: 0,
       date:       formatDate(),
-      password:   form.password.trim() || null,
+      user_id:    session.user.id,
     }]).select().single()
     setSubmitting(false)
-
     if (error) { setFormErr('저장 중 오류: ' + error.message); return }
     setDbPosts(prev => [data, ...prev])
     setForm(EMPTY_FORM); setImgPreview(''); setFormErr(''); setShowWrite(false)
   }
 
-  // ── 비밀번호 모달 ─────────────────────────────────────────────────
-  function openPwdModal(title, onConfirm) {
-    setPwdModal({ title, onConfirm })
-    setPwdInput('')
-    setPwdError('')
-  }
-  function closePwdModal() {
-    setPwdModal(null); setPwdInput(''); setPwdError('')
-  }
-  async function confirmPwd() {
-    if (pwdModal) await pwdModal.onConfirm(pwdInput)
-  }
-
-  // ── 게시글 삭제 (비밀번호) ────────────────────────────────────────
-  async function handleDeleteRequest(id, e) {
-    e.stopPropagation()
-    const post = dbPosts.find(p => p.id === id)
-    if (!post) return
-    if (!post.password) {
-      if (!confirm('게시글을 삭제할까요?')) return
-      await _doDeletePost(id)
-      return
-    }
-    openPwdModal('게시글 삭제', async (pwd) => {
-      if (pwd !== post.password) { setPwdError('비밀번호가 틀렸습니다.'); return }
-      closePwdModal()
-      await _doDeletePost(id)
-    })
-  }
-  async function _doDeletePost(id) {
-    const { error } = await supabase.from('board_posts').delete().eq('id', id)
-    if (error) { alert('삭제 실패: ' + error.message); return }
-    setDbPosts(prev => prev.filter(p => p.id !== id))
-    if (selectedPost?.id === id) setSelectedPost(null)
-  }
-
-  // ── 게시글 수정 ───────────────────────────────────────────────────
+  // ── 게시글 수정
   async function handleEditRequest(post, e) {
     e.stopPropagation()
-    const open = () => {
-      setEditingPost(post)
-      setEditForm({
-        title:     post.title,
-        category:  post.category,
-        type:      post.type,
-        imageData: post.image_data || '',
-        videoUrl:  post.video_url  || '',
-        content:   post.content,
-        password:  post.password   || '',
-      })
-      setImgPreview(post.image_data || '')
-      setFormErr('')
-    }
-    if (!post.password) { open(); return }
-    openPwdModal('게시글 수정', async (pwd) => {
-      if (pwd !== post.password) { setPwdError('비밀번호가 틀렸습니다.'); return }
-      closePwdModal(); open()
+    if (session?.user?.id !== post.user_id) return
+    setEditingPost(post)
+    setEditForm({
+      title:     post.title,
+      category:  post.category,
+      type:      post.type,
+      imageData: post.image_data || '',
+      videoUrl:  post.video_url  || '',
+      content:   post.content,
     })
+    setImgPreview(post.image_data || '')
+    setFormErr('')
   }
   function handleEditForm(field, val) { setEditForm(prev => ({ ...prev, [field]: val })) }
   function handleEditTypeChange(type) {
-    setEditForm(prev => ({ ...prev, type, imageData: '', videoUrl: '' }))
+    setEditForm(prev => ({ ...prev, type, imageData:'', videoUrl:'' }))
     setImgPreview('')
     if (editFileRef.current) editFileRef.current.value = ''
   }
   function handleEditImgFile(e) {
     const file = e.target.files[0]
     if (!file) return
-    if (file.size > 3 * 1024 * 1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
+    if (file.size > 3*1024*1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
     setFormErr('')
     const reader = new FileReader()
-    reader.onload = ev => {
-      setImgPreview(ev.target.result)
-      setEditForm(prev => ({ ...prev, imageData: ev.target.result }))
-    }
+    reader.onload = ev => { setImgPreview(ev.target.result); setEditForm(prev => ({ ...prev, imageData: ev.target.result })) }
     reader.readAsDataURL(file)
   }
   async function handleEditSubmit() {
-    if (!editForm.title.trim())   { setFormErr('제목을 입력해주세요.'); return }
-    if (!editForm.content.trim()) { setFormErr('내용을 입력해주세요.'); return }
-    if (editForm.type === 'image' && !editForm.imageData) { setFormErr('이미지를 업로드해주세요.'); return }
+    if (!editForm.title.trim())                              { setFormErr('제목을 입력해주세요.'); return }
+    if (!editForm.content.trim())                            { setFormErr('내용을 입력해주세요.'); return }
+    if (editForm.type === 'image' && !editForm.imageData)   { setFormErr('이미지를 업로드해주세요.'); return }
     if (editForm.type === 'video' && !editForm.videoUrl.trim()) { setFormErr('동영상 URL을 입력해주세요.'); return }
 
     setSubmitting(true)
-    const { data, error } = await supabase.from('board_posts').update({
+    const { data, error } = await supabase.from('v4_board_posts').update({
       title:      editForm.title.trim(),
       content:    editForm.content.trim(),
       category:   editForm.category,
@@ -494,7 +465,6 @@ export default function AppV3() {
       video_url:  editForm.videoUrl.trim() || null,
     }).eq('id', editingPost.id).select().single()
     setSubmitting(false)
-
     if (error) { setFormErr('수정 중 오류: ' + error.message); return }
     setDbPosts(prev => prev.map(p => p.id === editingPost.id ? { ...p, ...data } : p))
     if (selectedPost?.id === editingPost.id) setSelectedPost(prev => ({ ...prev, ...data }))
@@ -506,6 +476,18 @@ export default function AppV3() {
     if (editFileRef.current) editFileRef.current.value = ''
   }
 
+  // ── 게시글 삭제
+  async function handleDeleteRequest(id, e) {
+    e.stopPropagation()
+    const post = dbPosts.find(p => p.id === id)
+    if (!post || session?.user?.id !== post.user_id) return
+    if (!confirm('게시글을 삭제할까요?')) return
+    const { error } = await supabase.from('v4_board_posts').delete().eq('id', id)
+    if (error) { alert('삭제 실패: ' + error.message); return }
+    setDbPosts(prev => prev.filter(p => p.id !== id))
+    if (selectedPost?.id === id) setSelectedPost(null)
+  }
+
   function closeWrite() {
     setShowWrite(false)
     setForm(EMPTY_FORM); setStudyForm(EMPTY_STUDY_FORM)
@@ -514,26 +496,24 @@ export default function AppV3() {
     if (fileRef2.current) fileRef2.current.value = ''
   }
 
-  // ── Study Board 핸들러 ────────────────────────────────────────────
+  // ── Study Board 핸들러
   function handleStudyForm(field, val) { setStudyForm(prev => ({ ...prev, [field]: val })) }
   function handleStudyTypeChange(type) {
-    setStudyForm(prev => ({ ...prev, type, imageData: '', videoUrl: '' }))
+    setStudyForm(prev => ({ ...prev, type, imageData:'', videoUrl:'' }))
     setImgPreview('')
     if (fileRef2.current) fileRef2.current.value = ''
   }
   function handleStudyImgFile(e) {
     const file = e.target.files[0]
     if (!file) return
-    if (file.size > 3 * 1024 * 1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
+    if (file.size > 3*1024*1024) { setFormErr('이미지는 3MB 이하만 가능합니다.'); return }
     setFormErr('')
     const reader = new FileReader()
-    reader.onload = ev => {
-      setImgPreview(ev.target.result)
-      setStudyForm(prev => ({ ...prev, imageData: ev.target.result }))
-    }
+    reader.onload = ev => { setImgPreview(ev.target.result); setStudyForm(prev => ({ ...prev, imageData: ev.target.result })) }
     reader.readAsDataURL(file)
   }
   async function handleStudySubmit() {
+    if (!session) { closeWrite(); openAuth('login'); return }
     if (!studyForm.title.trim())                                   { setFormErr('제목을 입력해주세요.'); return }
     if (!studyForm.content.trim())                                 { setFormErr('내용을 입력해주세요.'); return }
     if (studyForm.type === 'image' && !studyForm.imageData)        { setFormErr('이미지를 업로드해주세요.'); return }
@@ -552,7 +532,6 @@ export default function AppV3() {
       date:       formatDate(),
     }]).select().single()
     setSubmitting(false)
-
     if (error) { setFormErr('저장 중 오류: ' + error.message); return }
     const newPost = {
       id: data.id, userCreated: true,
@@ -573,15 +552,17 @@ export default function AppV3() {
     if (studySelected?.id === id) setStudySelected(null)
   }
 
+  const isOwner = (post) => session?.user?.id && session.user.id === post.user_id
+
   // ── 렌더 ─────────────────────────────────────────────────────────
   return (
-    <div className="portfolio v3">
+    <div className="portfolio v4">
 
       {/* Nav */}
       <nav className="nav">
         <div className="nav-left">
           <span className="nav-name">심하윤</span>
-          <span className="ver-badge v3-badge">v3</span>
+          <span className="ver-badge v4-badge">v4</span>
         </div>
         <div className="nav-links">
           <a href="#about">About</a>
@@ -590,8 +571,15 @@ export default function AppV3() {
           <a href="#awards">Awards</a>
           <a href="#board">Board</a>
           <a href="#contact">Contact</a>
-          <a href="#v4" className="nav-ver-switch">v4 →</a>
-          <a href="#v2" className="nav-ver-switch">← v2</a>
+          <a href="#v3" className="nav-ver-switch">← v3</a>
+          {session ? (
+            <div className="auth-nav">
+              <span className="auth-email">{shortEmail(session.user.email)}</span>
+              <button className="auth-logout-btn" onClick={handleLogout}>로그아웃</button>
+            </div>
+          ) : (
+            <button className="auth-login-btn" onClick={() => openAuth('login')}>로그인</button>
+          )}
         </div>
       </nav>
 
@@ -706,31 +694,35 @@ export default function AppV3() {
         </div>
       </section>
 
-      {/* ── Board (게시판 + Study Board 통합) ─────────────────────── */}
+      {/* ── Board ─────────────────────────────────────────────────── */}
       <section id="board" className="section">
-        {/* 헤더 */}
         <div className="board-header-row">
           <h3 className="section-title" style={{ marginBottom:0, borderBottom:'none' }}>Board</h3>
-          <button className="write-btn" onClick={() => setShowWrite(true)}>+ 글 쓰기</button>
+          <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+            {!session && (
+              <span className="board-login-notice">
+                <button onClick={() => openAuth('login')}>로그인</button>하면 글을 작성할 수 있어요.
+              </span>
+            )}
+            <button className="write-btn" onClick={() => session ? setShowWrite(true) : openAuth('login')}>
+              + 글 쓰기
+            </button>
+          </div>
         </div>
 
         {/* 모드 전환 탭 */}
         <div className="board-mode-tabs">
-          <button
-            className={`board-mode-tab${boardMode === 'community' ? ' active' : ''}`}
-            onClick={() => setBoardMode('community')}
-          >💬 게시판</button>
-          <button
-            className={`board-mode-tab${boardMode === 'study' ? ' active' : ''}`}
-            onClick={() => setBoardMode('study')}
-          >📚 Study Board</button>
+          <button className={`board-mode-tab${boardMode === 'community' ? ' active' : ''}`}
+            onClick={() => setBoardMode('community')}>💬 게시판</button>
+          <button className={`board-mode-tab${boardMode === 'study' ? ' active' : ''}`}
+            onClick={() => setBoardMode('study')}>📚 Study Board</button>
         </div>
 
-        {/* ── 커뮤니티 게시판 ──────────────────────────────────────── */}
+        {/* ── 커뮤니티 게시판 ── */}
         {boardMode === 'community' && (() => {
           return (
             <>
-              <p className="board-subtitle">자유롭게 글을 작성하고 소통하는 공간입니다.</p>
+              <p className="board-subtitle">로그인 후 자유롭게 글을 작성하고 소통하는 공간입니다.</p>
               <div className="board-tabs">
                 {BOARD_CATS.map(cat => (
                   <button key={cat} className={`board-tab${activeCat === cat ? ' active' : ''}`}
@@ -758,7 +750,7 @@ export default function AppV3() {
                       {post.title}
                       {post.type === 'image' && <span className="blist-media-icon">🖼</span>}
                       {post.type === 'video' && <span className="blist-media-icon">▶</span>}
-                      {!String(post.id).startsWith('dummy') && (
+                      {isOwner(post) && (
                         <span className="blist-actions">
                           <button className="blist-edit-btn" onClick={e => handleEditRequest(post, e)} title="수정">✏</button>
                           <button className="blist-del-btn"  onClick={e => handleDeleteRequest(post.id, e)} title="삭제">✕</button>
@@ -779,9 +771,9 @@ export default function AppV3() {
           )
         })()}
 
-        {/* ── Study Board ──────────────────────────────────────────── */}
+        {/* ── Study Board ── */}
         {boardMode === 'study' && (() => {
-          const allStudy = [...studyDbPosts, ...STUDY_DUMMY]
+          const allStudy      = [...studyDbPosts, ...STUDY_DUMMY]
           const filteredStudy = studyCat === "전체" ? allStudy : allStudy.filter(p => p.category === studyCat)
           return (
             <>
@@ -844,19 +836,18 @@ export default function AppV3() {
         </div>
       </section>
 
-      <footer className="footer">© 2026 심하윤. All rights reserved. — v3</footer>
+      <footer className="footer">© 2026 심하윤. All rights reserved. — v4</footer>
 
-      {/* ── 게시글 상세 모달 ─────────────────────────────────────── */}
+      {/* ── 게시글 상세 모달 ── */}
       {selectedPost && (
         <div className="modal-overlay" onClick={() => setSelectedPost(null)}>
           <div className="modal post-modal" onClick={e => e.stopPropagation()}>
-            {/* 헤더 */}
             <div className="post-modal-header">
               <span className="blist-cat-badge">{selectedPost.category}</span>
               <div className="post-modal-header-actions">
-                {!String(selectedPost.id).startsWith('dummy') && (<>
-                  <button className="post-modal-edit-btn" onClick={e => { handleEditRequest(selectedPost, e) }}>✏ 수정</button>
-                  <button className="post-modal-del-btn"  onClick={e => { handleDeleteRequest(selectedPost.id, e) }}>🗑 삭제</button>
+                {isOwner(selectedPost) && (<>
+                  <button className="post-modal-edit-btn" onClick={e => handleEditRequest(selectedPost, e)}>✏ 수정</button>
+                  <button className="post-modal-del-btn"  onClick={e => handleDeleteRequest(selectedPost.id, e)}>🗑 삭제</button>
                 </>)}
                 <button className="modal-close" onClick={() => setSelectedPost(null)}>✕</button>
               </div>
@@ -868,7 +859,6 @@ export default function AppV3() {
             </div>
             <div className="post-modal-divider" />
 
-            {/* 미디어 */}
             {selectedPost.type === 'image' && selectedPost.image_data && (
               <img src={selectedPost.image_data} alt={selectedPost.title} className="modal-img" />
             )}
@@ -884,8 +874,6 @@ export default function AppV3() {
                 />
               </div>
             )}
-
-            {/* 내용 */}
             <div className="post-modal-content">
               {selectedPost.content.split('\n').map((line, i) =>
                 line.trim() === '' ? <br key={i} /> : <p key={i}>{line}</p>
@@ -927,34 +915,37 @@ export default function AppV3() {
                         <div key={c.id} className="comment-item">
                           <div className="comment-content">{c.content}</div>
                           <div className="comment-footer">
-                            <span className="comment-date">{c.date}{c.password && <span className="comment-has-pwd" title="비밀번호 설정됨"> 🔒</span>}</span>
-                            <button className="comment-del-btn" onClick={() => handleDeleteComment(c)}>삭제</button>
+                            <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                              <span className="comment-author">{shortEmail(c.email || '')}</span>
+                              <span className="comment-date">{c.date}</span>
+                            </div>
+                            {session?.user?.id === c.user_id && (
+                              <button className="comment-del-btn" onClick={() => handleDeleteComment(c)}>삭제</button>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-                  <div className="comment-write-area">
-                    <textarea
-                      className="comment-textarea"
-                      placeholder="댓글을 입력하세요..."
-                      value={commentText}
-                      onChange={e => setCommentText(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
-                      rows={2}
-                    />
-                    <div className="comment-write-bottom">
-                      <input
-                        className="comment-pwd-input"
-                        type="password"
-                        placeholder="🔒 비밀번호 (선택)"
-                        value={commentPwd}
-                        onChange={e => setCommentPwd(e.target.value)}
-                        maxLength={20}
+                  {session ? (
+                    <div className="comment-write-area">
+                      <textarea
+                        className="comment-textarea"
+                        placeholder="댓글을 입력하세요..."
+                        value={commentText}
+                        onChange={e => setCommentText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
+                        rows={2}
                       />
-                      <button className="comment-submit-btn" onClick={handleAddComment}>등록</button>
+                      <div className="comment-write-bottom">
+                        <button className="comment-submit-btn" onClick={handleAddComment}>등록</button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="comment-login-notice">
+                      <button onClick={() => openAuth('login')}>로그인</button>하면 댓글을 작성할 수 있습니다.
+                    </p>
+                  )}
                 </>
               )}
             </div>
@@ -962,7 +953,7 @@ export default function AppV3() {
         </div>
       )}
 
-      {/* ── Study Board 상세 모달 ────────────────────────────────── */}
+      {/* ── Study Board 상세 모달 ── */}
       {studySelected && (
         <div className="modal-overlay" onClick={() => setStudySelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -999,7 +990,7 @@ export default function AppV3() {
         </div>
       )}
 
-      {/* ── 글 쓰기 모달 (모드별 분기) ──────────────────────────── */}
+      {/* ── 글 쓰기 모달 ── */}
       {showWrite && (
         <div className="modal-overlay" onClick={closeWrite}>
           <div className="modal write-modal" onClick={e => e.stopPropagation()}>
@@ -1010,7 +1001,7 @@ export default function AppV3() {
               <button className="modal-close" onClick={closeWrite}>✕</button>
             </div>
 
-            {/* ── 게시판 폼 ── */}
+            {/* 게시판 폼 */}
             {boardMode === 'community' && (<>
               <div className="form-group">
                 <label className="form-label">제목 <span className="required">*</span></label>
@@ -1060,14 +1051,9 @@ export default function AppV3() {
                 <textarea className="form-textarea" placeholder="내용을 자유롭게 작성하세요."
                   value={form.content} onChange={e => handleForm('content', e.target.value)} rows={10} />
               </div>
-              <div className="form-group">
-                <label className="form-label">🔒 비밀번호 <span className="form-hint">수정·삭제 시 사용 (선택)</span></label>
-                <input className="form-input" type="password" placeholder="비밀번호를 설정하면 수정·삭제에 필요합니다"
-                  value={form.password} onChange={e => handleForm('password', e.target.value)} maxLength={30} />
-              </div>
             </>)}
 
-            {/* ── Study Board 폼 ── */}
+            {/* Study Board 폼 */}
             {boardMode === 'study' && (<>
               <div className="form-group">
                 <label className="form-label">제목 <span className="required">*</span></label>
@@ -1137,7 +1123,7 @@ export default function AppV3() {
         </div>
       )}
 
-      {/* ── 게시글 수정 모달 ────────────────────────────────────── */}
+      {/* ── 게시글 수정 모달 ── */}
       {editingPost && (
         <div className="modal-overlay" onClick={closeEdit}>
           <div className="modal write-modal" onClick={e => e.stopPropagation()}>
@@ -1204,28 +1190,62 @@ export default function AppV3() {
         </div>
       )}
 
-      {/* ── 비밀번호 확인 모달 ──────────────────────────────────── */}
-      {pwdModal && (
-        <div className="modal-overlay pwd-overlay" onClick={closePwdModal}>
-          <div className="modal pwd-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="pwd-modal-title">🔒 {pwdModal.title}</h3>
-              <button className="modal-close" onClick={closePwdModal}>✕</button>
+      {/* ── 로그인 / 회원가입 모달 ── */}
+      {authModal && (
+        <div className="modal-overlay auth-overlay" onClick={closeAuth}>
+          <div className="modal auth-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" style={{ position:'absolute', top:'20px', right:'24px' }} onClick={closeAuth}>✕</button>
+            <div className="auth-modal-logo">🔐</div>
+            <h2 className="auth-modal-title">심하윤 포트폴리오</h2>
+            <p className="auth-modal-subtitle">로그인하면 게시글과 댓글을 작성할 수 있습니다.</p>
+
+            <div className="auth-tabs">
+              <button className={`auth-tab${authTab === 'login' ? ' active' : ''}`}
+                onClick={() => { setAuthTab('login'); setAuthErr(''); setAuthSuccess('') }}>로그인</button>
+              <button className={`auth-tab${authTab === 'signup' ? ' active' : ''}`}
+                onClick={() => { setAuthTab('signup'); setAuthErr(''); setAuthSuccess('') }}>회원가입</button>
             </div>
-            <p className="pwd-modal-desc">비밀번호를 입력해주세요.</p>
-            <input
-              className="form-input"
-              type="password"
-              placeholder="비밀번호"
-              value={pwdInput}
-              onChange={e => setPwdInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && confirmPwd()}
-              autoFocus
-            />
-            {pwdError && <p className="form-error" style={{marginTop:'8px'}}>{pwdError}</p>}
-            <div className="form-actions" style={{marginTop:'16px'}}>
-              <button className="form-cancel" onClick={closePwdModal}>취소</button>
-              <button className="form-submit" onClick={confirmPwd}>확인</button>
+
+            {authSuccess && <p className="auth-success">{authSuccess}</p>}
+
+            <div className="form-group">
+              <label className="form-label">이메일</label>
+              <input className="form-input" type="email" placeholder="example@email.com"
+                value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (authTab === 'login' ? handleLogin() : handleSignup())}
+                autoFocus />
+            </div>
+            <div className="form-group">
+              <label className="form-label">비밀번호</label>
+              <input className="form-input" type="password" placeholder="6자 이상"
+                value={authPwd} onChange={e => setAuthPwd(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (authTab === 'login' ? handleLogin() : handleSignup())} />
+            </div>
+            {authTab === 'signup' && (
+              <div className="form-group">
+                <label className="form-label">비밀번호 확인</label>
+                <input className="form-input" type="password" placeholder="비밀번호를 다시 입력하세요"
+                  value={authPwdConfirm} onChange={e => setAuthPwdConfirm(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSignup()} />
+              </div>
+            )}
+
+            {authErr && <p className="form-error">{authErr}</p>}
+
+            <div className="form-actions" style={{ marginTop:'8px', paddingTop:'16px' }}>
+              <button className="form-cancel" onClick={closeAuth} disabled={authLoading}>취소</button>
+              <button className="form-submit"
+                onClick={authTab === 'login' ? handleLogin : handleSignup}
+                disabled={authLoading}>
+                {authLoading ? '처리 중...' : authTab === 'login' ? '로그인' : '회원가입'}
+              </button>
+            </div>
+
+            <div className="auth-footer">
+              {authTab === 'login'
+                ? <>계정이 없으신가요? <button onClick={() => { setAuthTab('signup'); setAuthErr(''); setAuthSuccess('') }}>회원가입</button></>
+                : <>이미 계정이 있으신가요? <button onClick={() => { setAuthTab('login'); setAuthErr(''); setAuthSuccess('') }}>로그인</button></>
+              }
             </div>
           </div>
         </div>

@@ -90,7 +90,8 @@ export default function App() {
           <a href="#awards">Awards</a>
           <a href="#contact">Contact</a>
           <a href="#v2" className="nav-v2-btn">v2</a>
-          <a href="#v3" className="nav-v2-btn nav-v3-btn">v3 게시판 →</a>
+          <a href="#v3" className="nav-v2-btn nav-v3-btn">v3 →</a>
+          <a href="#v4" className="nav-v2-btn nav-v3-btn">v4 로그인 →</a>
         </div>
       </nav>
 
