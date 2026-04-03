@@ -190,20 +190,8 @@ export default function AppV4() {
 
   // ── GitHub 핀 레포 로드
   useEffect(() => {
-    const query = `{ user(login: "kmnnmew") { pinnedItems(first: 6, types: REPOSITORY) { nodes { ... on Repository { name description url stargazerCount forkCount primaryLanguage { name color } updatedAt } } } } }`
-    fetch('https://api.github.com/graphql', {
-      method: 'POST',
-      headers: {
-        Authorization: `bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        const nodes = d?.data?.user?.pinnedItems?.nodes || []
-        setGithubRepos(nodes)
-      })
+    supabase.functions.invoke('github-repos')
+      .then(({ data }) => { if (Array.isArray(data)) setGithubRepos(data) })
       .catch(() => {})
   }, [])
 
