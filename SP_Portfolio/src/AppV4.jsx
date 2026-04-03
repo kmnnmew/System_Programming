@@ -70,81 +70,7 @@ const portfolio = {
 // ── 게시판 설정 ────────────────────────────────────────────────────
 const BOARD_CATS    = ["전체", "자유", "질문", "정보", "이슈", "기타"]
 const STUDY_CATS    = ["전체", "React", "JavaScript", "Java", "Python", "DB", "기타"]
-const VOTES_KEY     = 'v4_votes'
-const DUMMY_VOTES_KEY = 'v4_dummy_votes'
-
-// ── Study Board 더미 게시글 ────────────────────────────────────────
-const STUDY_DUMMY = [
-  {
-    id: 'sd-1', category: 'React', title: 'React useState & useEffect 완벽 정리',
-    preview: 'React 훅의 핵심인 useState와 useEffect의 동작 원리, 의존성 배열, 클린업 함수까지 실전 예제로 정리했습니다.',
-    date: '2026.03.20', tags: ['React', 'Hooks', 'Frontend'], type: 'text',
-    content: `## useState란?\n\nuseState는 컴포넌트에 상태값을 추가할 수 있는 훅입니다.\n\`\`\`jsx\nconst [count, setCount] = useState(0)\n\`\`\`\n\n## useEffect란?\n\n의존성 배열을 빈 배열로 두면 마운트 시 1회만 실행됩니다.`,
-  },
-  {
-    id: 'sd-2', category: 'Java', title: 'JSP & Servlet 동작 흐름 정리',
-    preview: '클라이언트 요청부터 서버 응답까지의 전체 흐름, doGet/doPost 차이, 세션과 쿠키 처리 방법을 정리했습니다.',
-    date: '2026.03.15', tags: ['Java', 'JSP', 'Servlet'], type: 'text',
-    content: `## JSP/Servlet 요청 처리 흐름\n\n1. 클라이언트 HTTP 요청\n2. Tomcat → Servlet 전달\n3. doGet / doPost 실행\n4. JSP 응답 페이지 생성\n5. 클라이언트에 HTML 반환`,
-  },
-  {
-    id: 'sd-3', category: 'DB', title: 'Oracle JOIN 종류와 실전 쿼리',
-    preview: 'INNER JOIN, LEFT OUTER JOIN, FULL OUTER JOIN의 차이와 실제 프로젝트에서 자주 쓰는 쿼리 패턴을 정리했습니다.',
-    date: '2026.03.10', tags: ['Oracle', 'SQL', 'DB'], type: 'text',
-    content: `## JOIN 종류\n\n### INNER JOIN\n두 테이블 모두에 있는 데이터만 조회\n\`\`\`sql\nSELECT a.name, b.dept FROM employee a INNER JOIN department b ON a.dept_id = b.id\n\`\`\`\n\n### LEFT OUTER JOIN\n왼쪽 테이블 전체 + 오른쪽 일치 데이터`,
-  },
-  {
-    id: 'sd-4', category: 'Python', title: 'Pandas로 공간정보 데이터 분석하기',
-    preview: '데이터안심구역 경진대회에서 활용한 Pandas + GeoPandas 기반 공간 데이터 전처리 및 시각화 과정을 기록했습니다.',
-    date: '2026.02.28', tags: ['Python', 'Pandas', 'GIS'], type: 'text',
-    content: `## 공간정보 데이터 처리 흐름\n\n### 1. 데이터 로드\n\`\`\`python\nimport geopandas as gpd\ngdf = gpd.read_file('seoul.geojson')\n\`\`\`\n\n### 2. 전처리 & 시각화\n\`\`\`python\ngdf.plot(column='area_km2', cmap='Blues', legend=True)\n\`\`\``,
-  },
-  {
-    id: 'sd-5', category: 'JavaScript', title: '비동기 처리: Promise vs async/await',
-    preview: '콜백 지옥부터 async/await까지 자바스크립트 비동기 처리의 진화 과정과 각 패턴의 장단점을 비교했습니다.',
-    date: '2026.02.20', tags: ['JavaScript', '비동기', 'Promise'], type: 'text',
-    content: `## async/await (권장)\n\`\`\`js\nasync function loadData(id) {\n  const user = await fetchUser(id)\n  const posts = await fetchPosts(user.id)\n  return posts\n}\n\`\`\``,
-  },
-]
-
-// ── 더미 게시글 ───────────────────────────────────────────────────
-const DUMMY_POSTS = [
-  {
-    id: 'dummy-1', category: '자유', title: '포트폴리오 사이트 드디어 완성했습니다 🎉',
-    content: 'React + Supabase로 포트폴리오 사이트를 만들었어요. 처음에는 단순한 정적 페이지였는데 이제 게시판까지 붙었네요. 앞으로도 계속 기능을 추가할 예정입니다!',
-    views: 142, likes: 18, dislikes: 0, date: '2026.03.27', type: 'text',
-  },
-  {
-    id: 'dummy-2', category: '질문', title: 'React useEffect 의존성 배열 관련 질문이요',
-    content: 'useEffect에서 의존성 배열을 빈 배열로 두면 마운트 시 한 번만 실행된다고 알고 있는데, 그럼 특정 state가 변경될 때마다 실행하려면 어떻게 해야 하나요?\n\n예를 들어 count가 바뀔 때마다 API를 호출하고 싶은 경우요.',
-    views: 87, likes: 7, dislikes: 1, date: '2026.03.26', type: 'text',
-  },
-  {
-    id: 'dummy-3', category: '정보', title: 'Supabase 무료 플랜 제한 정리 (2026 기준)',
-    content: 'Supabase 무료 플랜 주요 제한 사항 정리:\n\n- DB 용량: 500MB\n- 파일 스토리지: 1GB\n- 월간 API 요청: 무제한\n- 동시 접속: 최대 50개\n- 프로젝트 2개까지 무료\n- 비활성 1주일 시 자동 일시정지\n\n포트폴리오 정도 규모라면 무료 플랜으로 충분합니다.',
-    views: 203, likes: 31, dislikes: 2, date: '2026.03.25', type: 'text',
-  },
-  {
-    id: 'dummy-4', category: '이슈', title: 'GitHub Pages 배포 후 새로고침하면 404 뜨는 문제',
-    content: 'SPA를 GitHub Pages에 배포하면 새로고침 시 404가 뜨는 문제가 있습니다.\n\n해결책:\n1. vite.config.js에서 base 경로 설정\n2. 404.html을 index.html로 복사하는 방법\n3. HashRouter 사용 (#/ 방식)\n\n저는 HashRouter 방식으로 해결했어요. 가장 간단합니다.',
-    views: 156, likes: 22, dislikes: 1, date: '2026.03.24', type: 'text',
-  },
-  {
-    id: 'dummy-5', category: '자유', title: '데이터안심구역 경진대회 수상 후기',
-    content: '한국데이터산업진흥원 주관 데이터안심구역 활용 경진대회에서 데이터미래인재특별상을 받았습니다.\n\n공간정보 데이터를 활용해서 분석 모델을 만들었는데 생각보다 결과가 좋게 나왔어요. GeoPandas로 지역별 데이터를 시각화한 게 심사위원들한테 인상 깊었던 것 같습니다.',
-    views: 98, likes: 14, dislikes: 0, date: '2026.03.22', type: 'text',
-  },
-  {
-    id: 'dummy-6', category: '질문', title: 'JSP에서 파일 업로드 구현하는 방법',
-    content: 'JSP + Servlet 환경에서 이미지 파일 업로드를 구현하려고 합니다.\nMultipart 처리를 어떻게 하면 좋을까요?\n\nApache Commons FileUpload 라이브러리를 써야 하나요, 아니면 다른 방법이 있나요?',
-    views: 64, likes: 3, dislikes: 0, date: '2026.03.21', type: 'text',
-  },
-  {
-    id: 'dummy-7', category: '정보', title: 'Git 브랜치 전략 — 혼자 쓸 때 추천 방법',
-    content: '개인 프로젝트에서 쓰기 좋은 간단한 브랜치 전략:\n\n- main: 배포 브랜치 (항상 배포 가능 상태)\n- develop: 개발 브랜치\n- feature/기능명: 새 기능 개발\n\n혼자 할 때는 main + feature 정도만 써도 충분합니다. 너무 복잡하게 나눌 필요 없어요.',
-    views: 177, likes: 25, dislikes: 0, date: '2026.03.20', type: 'text',
-  },
-]
+const VOTES_KEY = 'v4_votes'
 
 // ── 유틸 ───────────────────────────────────────────────────────────
 function getYoutubeId(url) {
@@ -202,9 +128,6 @@ export default function AppV4() {
   const [votes,        setVotes]       = useState(() => {
     try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}') } catch { return {} }
   })
-  const [dummyCounts, setDummyCounts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(DUMMY_VOTES_KEY) || '{}') } catch { return {} }
-  })
   const [editingPost,  setEditingPost] = useState(null)
   const [editForm,     setEditForm]    = useState(EMPTY_FORM)
 
@@ -221,14 +144,7 @@ export default function AppV4() {
   const [studySelected, setStudySelected] = useState(null)
   const [studyForm,     setStudyForm]     = useState(EMPTY_STUDY_FORM)
 
-  // ── 전체 게시글: DB + 더미
-  const mergedDummy = DUMMY_POSTS.map(p => ({
-    ...p,
-    likes:    dummyCounts[p.id]?.likes    ?? p.likes,
-    dislikes: dummyCounts[p.id]?.dislikes ?? p.dislikes,
-  }))
-  const allPosts  = [...dbPosts, ...mergedDummy]
-  const filtered  = activeCat === "전체" ? allPosts : allPosts.filter(p => p.category === activeCat)
+  const filtered  = activeCat === "전체" ? dbPosts : dbPosts.filter(p => p.category === activeCat)
   const withIndex = filtered.map((p, i) => ({ ...p, num: filtered.length - i }))
 
   // ── Auth 세션 감지
@@ -302,27 +218,22 @@ export default function AppV4() {
   // ── 게시글 열기 (조회수 + 댓글 로드)
   async function handleOpen(post) {
     const fresh = { ...post }
-    if (!String(post.id).startsWith('dummy')) {
-      const newViews = (post.views || 0) + 1
-      await supabase.from('v4_board_posts').update({ views: newViews }).eq('id', post.id)
-      fresh.views = newViews
-      setDbPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: newViews } : p))
-    }
+    const newViews = (post.views || 0) + 1
+    await supabase.from('v4_board_posts').update({ views: newViews }).eq('id', post.id)
+    fresh.views = newViews
+    setDbPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: newViews } : p))
     setSelectedPost(fresh)
     setComments([])
     setCommentText('')
-    if (!String(post.id).startsWith('dummy')) {
-      setCommentsLoading(true)
-      const { data } = await supabase.from('v4_comments').select('*')
-        .eq('post_id', post.id).order('created_at', { ascending: true })
-      setComments(data || [])
-      setCommentsLoading(false)
-    }
+    setCommentsLoading(true)
+    const { data } = await supabase.from('v4_comments').select('*')
+      .eq('post_id', post.id).order('created_at', { ascending: true })
+    setComments(data || [])
+    setCommentsLoading(false)
   }
 
   // ── 추천 / 비추천
   async function handleVote(postId, type) {
-    const isDummy = String(postId).startsWith('dummy')
     const current = votes[postId]
     if (current === type) return
 
@@ -330,31 +241,19 @@ export default function AppV4() {
     setVotes(newVotes)
     localStorage.setItem(VOTES_KEY, JSON.stringify(newVotes))
 
-    if (isDummy) {
-      const base = DUMMY_POSTS.find(p => p.id === postId)
-      const prev = dummyCounts[postId] || { likes: base.likes, dislikes: base.dislikes }
-      const upd  = { ...prev }
-      if (type === 'like')    { upd.likes    += 1; if (current === 'dislike') upd.dislikes = Math.max(0, upd.dislikes-1) }
-      else                    { upd.dislikes += 1; if (current === 'like')    upd.likes    = Math.max(0, upd.likes-1) }
-      const newDummy = { ...dummyCounts, [postId]: upd }
-      setDummyCounts(newDummy)
-      localStorage.setItem(DUMMY_VOTES_KEY, JSON.stringify(newDummy))
-      setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
-    } else {
-      const target = dbPosts.find(p => p.id === postId)
-      if (!target) return
-      const upd = {}
-      if (type === 'like')    { upd.likes    = (target.likes||0)+1;    if (current==='dislike') upd.dislikes = Math.max(0,(target.dislikes||0)-1) }
-      else                    { upd.dislikes = (target.dislikes||0)+1; if (current==='like')    upd.likes    = Math.max(0,(target.likes||0)-1) }
-      await supabase.from('v4_board_posts').update(upd).eq('id', postId)
-      setDbPosts(prev => prev.map(p => p.id === postId ? { ...p, ...upd } : p))
-      setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
-    }
+    const target = dbPosts.find(p => p.id === postId)
+    if (!target) return
+    const upd = {}
+    if (type === 'like')    { upd.likes    = (target.likes||0)+1;    if (current==='dislike') upd.dislikes = Math.max(0,(target.dislikes||0)-1) }
+    else                    { upd.dislikes = (target.dislikes||0)+1; if (current==='like')    upd.likes    = Math.max(0,(target.likes||0)-1) }
+    await supabase.from('v4_board_posts').update(upd).eq('id', postId)
+    setDbPosts(prev => prev.map(p => p.id === postId ? { ...p, ...upd } : p))
+    setSelectedPost(p => p?.id === postId ? { ...p, ...upd } : p)
   }
 
   // ── 댓글
   async function handleAddComment() {
-    if (!commentText.trim() || !selectedPost || String(selectedPost.id).startsWith('dummy')) return
+    if (!commentText.trim() || !selectedPost) return
     if (!session) { openAuth('login'); return }
     const { data, error } = await supabase.from('v4_comments').insert([{
       post_id: selectedPost.id,
@@ -775,8 +674,7 @@ export default function AppV4() {
 
         {/* ── Study Board ── */}
         {boardMode === 'study' && (() => {
-          const allStudy      = [...studyDbPosts, ...STUDY_DUMMY]
-          const filteredStudy = studyCat === "전체" ? allStudy : allStudy.filter(p => p.category === studyCat)
+          const filteredStudy = studyCat === "전체" ? studyDbPosts : studyDbPosts.filter(p => p.category === studyCat)
           return (
             <>
               <p className="board-subtitle">공부한 내용을 기록하는 학습 노트입니다.</p>
@@ -903,52 +801,46 @@ export default function AppV4() {
               <h4 className="comments-title">
                 💬 댓글{comments.length > 0 ? ` (${comments.length})` : ''}
               </h4>
-              {String(selectedPost.id).startsWith('dummy') ? (
-                <p className="comments-notice">샘플 게시글에는 댓글을 작성할 수 없습니다.</p>
+              {commentsLoading ? (
+                <p className="comments-loading">댓글 불러오는 중...</p>
+              ) : comments.length === 0 ? (
+                <p className="comments-empty">첫 댓글을 남겨보세요!</p>
               ) : (
-                <>
-                  {commentsLoading ? (
-                    <p className="comments-loading">댓글 불러오는 중...</p>
-                  ) : comments.length === 0 ? (
-                    <p className="comments-empty">첫 댓글을 남겨보세요!</p>
-                  ) : (
-                    <div className="comments-list">
-                      {comments.map(c => (
-                        <div key={c.id} className="comment-item">
-                          <div className="comment-content">{c.content}</div>
-                          <div className="comment-footer">
-                            <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                              <span className="comment-author">{shortEmail(c.email || '')}</span>
-                              <span className="comment-date">{c.date}</span>
-                            </div>
-                            {session?.user?.id === c.user_id && (
-                              <button className="comment-del-btn" onClick={() => handleDeleteComment(c)}>삭제</button>
-                            )}
-                          </div>
+                <div className="comments-list">
+                  {comments.map(c => (
+                    <div key={c.id} className="comment-item">
+                      <div className="comment-content">{c.content}</div>
+                      <div className="comment-footer">
+                        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                          <span className="comment-author">{shortEmail(c.email || '')}</span>
+                          <span className="comment-date">{c.date}</span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                  {session ? (
-                    <div className="comment-write-area">
-                      <textarea
-                        className="comment-textarea"
-                        placeholder="댓글을 입력하세요..."
-                        value={commentText}
-                        onChange={e => setCommentText(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
-                        rows={2}
-                      />
-                      <div className="comment-write-bottom">
-                        <button className="comment-submit-btn" onClick={handleAddComment}>등록</button>
+                        {session?.user?.id === c.user_id && (
+                          <button className="comment-del-btn" onClick={() => handleDeleteComment(c)}>삭제</button>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <p className="comment-login-notice">
-                      <button onClick={() => openAuth('login')}>로그인</button>하면 댓글을 작성할 수 있습니다.
-                    </p>
-                  )}
-                </>
+                  ))}
+                </div>
+              )}
+              {session ? (
+                <div className="comment-write-area">
+                  <textarea
+                    className="comment-textarea"
+                    placeholder="댓글을 입력하세요..."
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
+                    rows={2}
+                  />
+                  <div className="comment-write-bottom">
+                    <button className="comment-submit-btn" onClick={handleAddComment}>등록</button>
+                  </div>
+                </div>
+              ) : (
+                <p className="comment-login-notice">
+                  <button onClick={() => openAuth('login')}>로그인</button>하면 댓글을 작성할 수 있습니다.
+                </p>
               )}
             </div>
           </div>
